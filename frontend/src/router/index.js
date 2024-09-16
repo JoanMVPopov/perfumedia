@@ -19,6 +19,7 @@ const routes = [
   // },
   { path: '/', name: 'Home', component: HomePage },
   { path: '/clusters', name: 'Clusters', component: PlaceholderPage },
+  { path: '/etl', name: 'ETL', component: PlaceholderPage },
   { path: '/eda', name: 'EDA', component: PlaceholderPage },
   { path: '/classification', name: 'Classification', component: PlaceholderPage },
   { path: '/about', name: 'About', component: PlaceholderPage },

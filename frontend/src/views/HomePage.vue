@@ -29,14 +29,19 @@ export default {
     return {
       cards: [
         {
-          title: 'Clusters',
-          description: 'Explore clustering algorithms.',
-          route: '/clusters',
+          title: 'ETL',
+          description: 'See how data is Extracted, Transformed and Loaded',
+          route: '/etl',
         },
         {
           title: 'EDA',
-          description: 'Perform exploratory data analysis.',
+          description: 'Find out more about the dataset through Exploratory Data Analysis.',
           route: '/eda',
+        },
+        {
+          title: 'Clusters',
+          description: 'Explore clustering algorithms.',
+          route: '/clusters',
         },
         {
           title: 'Classification',
