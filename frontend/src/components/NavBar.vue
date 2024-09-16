@@ -11,8 +11,9 @@
       <!-- Centered Navigation Links -->
       <ul class="flex space-x-4 justify-center flex-grow">
         <li><router-link to="/" class="text-white hover:text-secondary">Home Page</router-link></li>
-        <li><router-link to="/clusters" class="text-white hover:text-secondary">Clusters</router-link></li>
+        <li><router-link to="/etl" class="text-white hover:text-secondary">ETL</router-link></li>
         <li><router-link to="/eda" class="text-white hover:text-secondary">EDA</router-link></li>
+        <li><router-link to="/clusters" class="text-white hover:text-secondary">Clusters</router-link></li>
         <li><router-link to="/classification" class="text-white hover:text-secondary">Classification</router-link></li>
         <li><router-link to="/about" class="text-white hover:text-secondary">About</router-link></li>
       </ul>
