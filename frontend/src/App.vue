@@ -6,7 +6,7 @@
 <!--  <router-view/>-->
   <div id="app" class="bg-[#FFF4EA] min-h-screen">
     <NavBar />
-    <router-view />
+    <router-view class="mx-auto lg:container lg:px-16 xl:px-20"/>
   </div>
 </template>
 
