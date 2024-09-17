@@ -2,7 +2,7 @@
 <template>
   <div class="w-full sm:w-1/2 md:w-1/4 px-2 mb-4">
     <div
-      class="bg-light rounded-lg shadow-md p-6 transition-all duration-300 hover:bg-[#FADFA1] hover:bg-opacity-50 hover:shadow-lg"
+      class="bg-[#FADFA1] bg-opacity-25 rounded-lg shadow-md p-6 transition-all duration-300 hover:bg-[#FADFA1] hover:bg-opacity-50 hover:shadow-lg"
     >
       <h2 class="text-xl font-semibold mb-2 underline-animation">
         {{ title }}

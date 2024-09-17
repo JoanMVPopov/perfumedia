@@ -4,7 +4,7 @@
 <!--    <router-link to="/about">About</router-link>-->
 <!--  </nav>-->
 <!--  <router-view/>-->
-  <div id="app">
+  <div id="app" class="bg-[#FFF4EA] min-h-screen">
     <NavBar />
     <router-view />
   </div>
