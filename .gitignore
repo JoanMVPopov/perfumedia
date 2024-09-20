@@ -1,0 +1,74 @@
+# Django/Python related ignores
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django migrations
+*/migrations/*
+
+# Django static files (collected)
+staticfiles/
+
+# Environment variables
+.env
+
+# Local development database
+db.sqlite3
+
+# Logs
+*.log
+*.pot
+*.pyc
+
+# Media and uploaded files
+media/
+
+# Django stuff:
+*.pyo
+*.pyd
+*.sqlite3
+
+# If using SQLite (in case there are backup files)
+*.sqlite3-journal
+
+# Compiled files
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Packages and dependencies
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Node related ignores (for Vue.js)
+
+# Node modules
+node_modules/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated files
+!.env # in case you want to include your .env.sample file
+
+# Dependency directories
+
+# Airflow related ignores (if you’re using Airflow)
+airflow.db
+*.pid
+dags/__pycache__/
+logs/
+
+# Docker related files
+docker-compose.override.yml
