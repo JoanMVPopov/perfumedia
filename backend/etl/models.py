@@ -35,12 +35,42 @@ class Perfume(models.Model):
         blank=True,
         default=list,
     )
-    chart_categories = ArrayField(
+    type = ArrayField(
         models.CharField(max_length=50),
         blank=True,
         default=list,
     )
-    chart_numbers = ArrayField(
+    type_numbers = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
+    style = ArrayField(
+        models.CharField(max_length=50),
+        blank=True,
+        default=list,
+    )
+    style_numbers = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
+    season = ArrayField(
+        models.CharField(max_length=50),
+        blank=True,
+        default=list,
+    )
+    season_numbers = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
+    occasion = ArrayField(
+        models.CharField(max_length=50),
+        blank=True,
+        default=list,
+    )
+    occasion_numbers = ArrayField(
         models.IntegerField(),
         blank=True,
         default=list,

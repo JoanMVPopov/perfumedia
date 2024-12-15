@@ -15,9 +15,15 @@ CREATE TABLE IF NOT EXISTS etl_perfume (
     brand VARCHAR(255) NOT NULL,
     rel_year INTEGER NOT NULL,
     rel_decade INTEGER NOT NULL,
-    notes TEXT[] DEFAULT '{}',  -- Array field for notes
-    chart_categories TEXT[] DEFAULT '{}',  -- Array field for chart_categories
-    chart_numbers INTEGER[] DEFAULT '{}',  -- Array field for chart_numbers
+    notes TEXT[] DEFAULT '{}',
+    type TEXT[] DEFAULT '{}',
+    type_numbers INTEGER[] DEFAULT '{}',
+    style TEXT[] DEFAULT '{}',
+    style_numbers INTEGER[] DEFAULT '{}',
+    season TEXT[] DEFAULT '{}',
+    season_numbers INTEGER[] DEFAULT '{}',
+    occasion TEXT[] DEFAULT '{}',
+    occasion_numbers INTEGER[] DEFAULT '{}',
     scent FLOAT NOT NULL,
     longevity FLOAT NOT NULL,
     sillage FLOAT NOT NULL,

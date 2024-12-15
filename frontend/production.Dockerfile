@@ -7,7 +7,7 @@ WORKDIR /app
 
 # inject all environment vars we'll need
 ARG VUE_APP_API_URL
-# expose the variable to the finished cotainer
+# expose the variable to the finished container
 ENV VUE_APP_API_URL=$VUE_APP_API_URL
 
 COPY package*.json ./

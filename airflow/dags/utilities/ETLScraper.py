@@ -1,8 +1,5 @@
 import logging
-
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from pyvirtualdisplay import Display
-from selenium import webdriver
 from selenium.common import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -10,12 +7,16 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from utilities.generic.Driver import ScrapeDriver
+from pydantic import BaseModel
 
 
-class Scraper:
-    def __init__(self, driver):
-        self.logger = logging.getLogger(__name__)
-        self.driver_instance = driver
+class Scraper(BaseModel):
+    #logger: logging.Logger
+    driver_instance: ScrapeDriver
+
+    model_config = {
+        "arbitrary_types_allowed": True
+    }
 
     def create_soup(self, link, index):
         self.driver_instance.driver.get(link)
@@ -72,11 +73,18 @@ class Scraper:
         return data_dic
 
     def extract_chart_items(self, soup, data_dic):
+        # get the divs with all 4 categories
         chart_items = soup.find_all('div', class_="col mb-2")
-        chart_categories_only_chart_list = []
-        chart_numbers_only_chart_list = []
 
+        # chart_categories_only_chart_list = []
+        # chart_numbers_only_chart_list = []
+
+        # explore each category and get the subcategories
         for item in chart_items:
+            chart_categories_only_chart_list = []
+            chart_numbers_only_chart_list = []
+
+            current_category = item.find('span', class_="black bold").get_text(strip=True)
             current_chart_items = item.find_all('tspan')
 
             # For each span in the current item
@@ -88,8 +96,11 @@ class Scraper:
                 chart_categories_only_chart_list.append(split_text[0])
                 chart_numbers_only_chart_list.append(int(split_text[1].split("%")[0]))
 
-        data_dic['Chart Categories'] = chart_categories_only_chart_list
-        data_dic['Chart Numbers'] = chart_numbers_only_chart_list
+            data_dic[f'{current_category}'] = chart_categories_only_chart_list
+            data_dic[f'{current_category} Numbers'] = chart_numbers_only_chart_list
+
+        # data_dic['Chart Categories'] = chart_categories_only_chart_list
+        # data_dic['Chart Numbers'] = chart_numbers_only_chart_list
         return data_dic
 
     def is_float(self, s):
@@ -105,7 +116,7 @@ class Scraper:
         current_rating_item = rating_items[0].get_text(separator=' ')
         current_rating_item = [float(x) for x in current_rating_item.split() if self.is_float(x)]
         current_rating_item = current_rating_item[
-                              0:len(current_rating_item):2]  # only select 1-10 ratings, categories known
+                              0:len(current_rating_item):2]  # only select 1-10 ratings, rubrics known
         data_dic['Scent'] = current_rating_item[0]
         data_dic['Longevity'] = current_rating_item[1]
         data_dic['Sillage'] = current_rating_item[2]
@@ -124,9 +135,21 @@ class Scraper:
         a_brand_name = a_tags[0].get_text()
         a_brand_year = int(a_tags[1].get_text())
 
+        brand_decade = None
+
+        if 1990 <= a_brand_year < 2000:
+            brand_decade = 1990
+        elif 2000 <= a_brand_year < 2010:
+            brand_decade = 2000
+        elif 2010 <= a_brand_year < 2020:
+            brand_decade = 2010
+        else:
+            brand_decade = 2020
+
         data_dic['Name'] = h1_perfume_name
         data_dic['Brand'] = a_brand_name
         data_dic['Year'] = a_brand_year
+        data_dic['Decade'] = brand_decade
 
         return data_dic
 
@@ -175,8 +198,11 @@ class Scraper:
                     self.extract_chart_items(soup, data_dictionary)
                     self.extract_rating_items(soup, data_dictionary)
                     total_record_list.append((link, data_dictionary['Name'], data_dictionary['Brand'],
-                                              data_dictionary['Year'], data_dictionary['Year'], data_dictionary['Notes'],
-                                              data_dictionary['Chart Categories'], data_dictionary['Chart Numbers'],
+                                              data_dictionary['Year'], data_dictionary['Decade'], data_dictionary['Notes'],
+                                              data_dictionary['Type'], data_dictionary['Type Numbers'],
+                                              data_dictionary['Style'], data_dictionary['Style Numbers'],
+                                              data_dictionary['Season'], data_dictionary['Season Numbers'],
+                                              data_dictionary['Occasion'], data_dictionary['Occasion Numbers'],
                                               data_dictionary['Scent'], data_dictionary['Longevity'], data_dictionary['Sillage'],
                                               data_dictionary['Bottle'], data_dictionary['Value For Money'],))
                     successful_link_scrape_ids.append((record_id,))
@@ -185,9 +211,10 @@ class Scraper:
 
             # After loop, insert newly acquired data into the etl_perfume table (contains all info)
             insert_query = """
-                            INSERT INTO etl_perfume (link, name, brand, rel_year, rel_decade, notes, chart_categories, 
-                            chart_numbers, scent, longevity, sillage, bottle, value_for_money)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                            INSERT INTO etl_perfume (link, name, brand, rel_year, rel_decade, notes, 
+                            type, type_numbers, style, style_numbers, season, season_numbers, occasion, occasion_numbers,  
+                            scent, longevity, sillage, bottle, value_for_money)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                             """
 
             cursor.executemany(insert_query, total_record_list)
@@ -213,5 +240,5 @@ class Scraper:
 
 def extract():
     driver = ScrapeDriver()
-    scraper = Scraper(driver)
+    scraper = Scraper(driver_instance=driver)
     return scraper.scrape()

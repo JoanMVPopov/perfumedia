@@ -2,8 +2,16 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pyvirtualdisplay import Display
 import logging
+#from pydantic import BaseModel, ConfigDict
+
+
+# TODO: Redo class with some dependency injection
 
 class ScrapeDriver:
+    #logger: logging.Logger
+    #driver: webdriver.Chrome
+    #display: Display
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.driver, self.display = self.setup_driver()

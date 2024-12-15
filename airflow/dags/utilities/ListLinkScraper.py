@@ -2,14 +2,20 @@ from airflow.models import Variable, DagModel
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from bs4 import BeautifulSoup
 import logging
+
+from pydantic import BaseModel
+
 from utilities.generic.Driver import ScrapeDriver
 from utilities.generic.links import links
 
 
-class LinkScraper:
-    def __init__(self, driver):
-        self.logger = logging.getLogger(__name__)
-        self.driver_instance = driver
+class LinkScraper(BaseModel):
+    #logger: logging.Logger
+    driver_instance: ScrapeDriver
+
+    model_config = {
+        "arbitrary_types_allowed": True
+    }
 
     def scrape_links(self):
         target_links = []
@@ -23,14 +29,13 @@ class LinkScraper:
 
             items = soup.find_all('div', class_="col-list")
 
-            #for item in items:
-            for item in range(5):
-                div_name_tag = items[item].find("div", class_="name")
+            for item in items:
+            #for item in range(5):
+                #div_name_tag = items[item].find("div", class_="name")
+                div_name_tag = item.find("div", class_="name")
                 a_tag = div_name_tag.find("a")
                 target_link = a_tag['href']
                 target_links.append((target_link, 0))
-
-        # df = pd.DataFrame(columns=["Link"], data=target_links)
 
         # Use the created connection ID
         pg_hook = PostgresHook(postgres_conn_id='dag_connection')
@@ -67,5 +72,5 @@ class LinkScraper:
 
 def link_scrape():
     driver = ScrapeDriver()
-    link_scraper = LinkScraper(driver)
+    link_scraper = LinkScraper(driver_instance=driver)
     return link_scraper.scrape_links()
