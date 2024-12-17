@@ -35,6 +35,7 @@ with DAG(
         schedule_interval='*/10 * * * *',  # every 10 minutes
         catchup=False,
         max_active_runs=1,
+        max_active_tasks=2
 ) as links_dag:
     @task.branch(task_id="branch")
     def branch_func():
@@ -83,6 +84,39 @@ with DAG(
             return True
         else:
             return False
+
+
+    def get_category_avg_pie_chart(df, category='type', threshold=1):
+        categories = df[category].apply(lambda x: ast.literal_eval(x))
+        numbers = df[f'{category}_numbers'].apply(lambda x: ast.literal_eval(x))
+
+        dictionary = dict()
+
+        for i, category_list in enumerate(categories):
+            for j, category_j in enumerate(category_list):
+                # if falsy value (still not in dictionary)
+                if not dictionary.get(category_j):
+                    dictionary[category_j] = numbers.iloc[i][j]
+                else:
+                    dictionary[category_j] += numbers.iloc[i][j]
+
+
+        # get the average per category
+        avg_dict = {key: (value / len(categories)) for key, value in dictionary.items()}
+
+        filtered_dict = {}
+        small_value_sum = 0
+
+        for key, value in avg_dict.items():
+            if value < threshold:
+                small_value_sum += value  # Add small values to 'Others'
+            else:
+                filtered_dict[key] = value
+
+        if small_value_sum > 0:
+            filtered_dict['Others'] = small_value_sum
+
+        return filtered_dict
 
 
     def decade_info(decade: int | str = 'All'):
@@ -140,17 +174,17 @@ with DAG(
             else:
                 df_filtered = df
 
-            if df.empty:
+            if df.empty or df_filtered.empty:
                 print("DataFrame is empty!")
                 return
 
-            df_filtered = df_filtered[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']]
+            df_filtered_rubrics_only = df_filtered[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']]
 
             # Calculate statistics
-            summary = df_filtered.describe()
-            median = df_filtered.median()
+            summary = df_filtered_rubrics_only.describe()
+            median = df_filtered_rubrics_only.median()
             # if multiple modes, select first one
-            mode = df_filtered.mode().iloc[0]
+            mode = df_filtered_rubrics_only.mode().iloc[0]
 
             summary_transposed = summary.T  # Transpose summary statistics
             summary_transposed['median'] = median
@@ -196,7 +230,7 @@ with DAG(
 
             # Box Plot
             plt.figure(figsize=(8, 6))
-            sns.boxplot(data=df_filtered)
+            sns.boxplot(data=df_filtered_rubrics_only)
             plt.title("Box Plots of Ratings")
 
             file_name = f'{decade}_{gender}_box_plots.png'
@@ -204,10 +238,10 @@ with DAG(
             plt.savefig(file_path_box_plots, bbox_inches='tight')
 
             # QQ Plots
-            fig, axes = plt.subplots(len(df_filtered.columns), 1, figsize=(6, 14))
-            for i, col in enumerate(df_filtered.columns):
-                print(df_filtered[col])
-                stats.probplot(df_filtered[col], dist="norm", plot=axes[i])
+            fig, axes = plt.subplots(len(df_filtered_rubrics_only.columns), 1, figsize=(6, 14))
+            for i, col in enumerate(df_filtered_rubrics_only.columns):
+                #print(df_filtered_rubrics_only[col])
+                stats.probplot(df_filtered_rubrics_only[col], dist="norm", plot=axes[i])
                 axes[i].set_title(f"QQ Plot for {col}")
                 axes[i].set_xlabel("Ordered value quantiles")
                 axes[i].set_xlabel("Normal quantiles")
@@ -218,19 +252,19 @@ with DAG(
             plt.savefig(file_path_qq_plots, bbox_inches='tight')
 
             # Pairplot with histograms
-            g = sns.pairplot(df_filtered, corner=True, diag_kind=None)
+            g = sns.pairplot(df_filtered_rubrics_only, corner=True, diag_kind=None)
 
             # Replace diagonal elements with custom histograms
-            for i in range(len(df_filtered.columns)):
+            for i in range(len(df_filtered_rubrics_only.columns)):
                 ax = g.axes[i, i]  # Access the diagonal subplot
                 if ax is not None:  # Check if the axis exists
                     g.fig.delaxes(ax)  # Remove the existing axis
-                    new_ax = g.fig.add_subplot(len(df_filtered.columns), len(df_filtered.columns),
-                                               i * len(df_filtered.columns) + i + 1)  # Recreate axis
+                    new_ax = g.fig.add_subplot(len(df_filtered_rubrics_only.columns), len(df_filtered_rubrics_only.columns),
+                                               i * len(df_filtered_rubrics_only.columns) + i + 1)  # Recreate axis
 
-                    ax = sns.histplot(df_filtered.iloc[:, i], bins=15, kde=False, ax=new_ax,
+                    ax = sns.histplot(df_filtered_rubrics_only.iloc[:, i], bins=15, kde=False, ax=new_ax,
                                       color="skyblue")  # Add histogram
-                    ax.set_title(f"Histogram of {df_filtered.columns[i]}", fontsize=10, fontweight='bold')  # Add title
+                    ax.set_title(f"Histogram of {df_filtered_rubrics_only.columns[i]}", fontsize=10, fontweight='bold')  # Add title
 
             g.fig.subplots_adjust(hspace=0.5, wspace=0.5)
 
@@ -240,13 +274,81 @@ with DAG(
 
             # Violin Plot
             plt.figure(figsize=(8, 6))
-            sns.violinplot(data=df_filtered)
+            sns.violinplot(data=df_filtered_rubrics_only)
             plt.title("Violin Plots of Ratings")
 
             file_name = f'{decade}_{gender}_violin_plots.png'
             file_path_violin_plots = os.path.join(current_dir, folder_name, file_name)
             plt.savefig(file_path_violin_plots, bbox_inches='tight')
 
+            
+
+            #############
+            ## PIE CHARTS
+            #############
+
+            categories = ['type', 'style', 'season', 'occasion']
+            threshold = 1
+
+            fig, axs = plt.subplots(4, 1, figsize=(12, 36))
+
+            for i, category in enumerate(categories):
+                dictionary = get_category_avg_pie_chart(df_filtered, category, threshold)
+
+                # create a pie chart from the dictionary values
+                labels = dictionary.keys()
+                sizes = dictionary.values()
+
+                axs[i].pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+                axs[i].set_title(f'Pie Chart of average {category} values')
+
+                if 'Others' in dictionary:
+                    fig.text(0.5, 0.01, f'"Others" includes categories below the threshold of {threshold}% per pie',
+                                ha='center', fontsize=10, color='gray')
+
+
+            plt.tight_layout()
+            file_name = f'{decade}_{gender}_avg_categories_piecharts.png'
+            file_path_categories_piecharts = os.path.join(current_dir, folder_name, file_name)
+            plt.savefig(file_path_categories_piecharts, bbox_inches='tight')
+
+            ##############
+            ## PROGRESSION
+            ##############
+
+            # only do it for all decades, per gender since info is not enough for further granularity
+            if decade == 'All':
+                # reset index otherwise rel_year becomes index
+                # selects all 5 rubric columns + years and excludes everything else
+                df_agg = df_filtered.groupby('rel_year')[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']].agg(['mean', 'std']).reset_index()
+
+                # if year has only 1 record, std will be NaN and the graph will look funny
+                df_agg.fillna(0.1, inplace=True)
+
+                fig, axs = plt.subplots(5, 1, figsize=(12, 30))
+
+                # range 5 because of 5 rubrics
+                for i in range(5):
+                    axs[i].plot(df_agg.iloc[:, 0], df_agg.iloc[:, 2 * i + 1], label='Mean Value', color='#C96868',
+                             linewidth=2, marker='o')
+
+                    # adding the shaded region for std
+                    axs[i].fill_between(df_agg.iloc[:, 0],
+                                     df_agg.iloc[:, 2 * i + 1] - df_agg.iloc[:, 2 * i + 2],
+                                     df_agg.iloc[:, 2 * i + 1] + df_agg.iloc[:, 2 * i + 2],
+                                     color='#FFF4EA', alpha=1, label='±1 Std. Dev.')
+
+                    axs[i].set_title(f'Yearly Averages with Standard Deviation for {df_agg.columns[2 * i + 1][0]}', fontsize=16)
+                    axs[i].set_xlabel('Year', fontsize=12)
+                    axs[i].set_ylabel('Average Value', fontsize=12)
+                    plt.legend(fontsize=12)
+                    plt.grid(alpha=0.3)
+
+                plt.tight_layout()
+
+                file_name = f'{decade}_{gender}_avg_rubric_progression.png'
+                file_path_rubric_progression = os.path.join(current_dir, folder_name, file_name)
+                plt.savefig(file_path_rubric_progression, bbox_inches='tight')
 
         except Exception as e:
             print(e)
