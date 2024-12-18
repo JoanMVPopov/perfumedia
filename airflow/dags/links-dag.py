@@ -435,12 +435,8 @@ with DAG(
                 [notes_dummies_top, df_encoded_categories],
                 axis=1)
 
-            print(df_combined)
-
             # Step 3: Compute the correlation matrix
             correlation_matrix = df_combined.corr()
-
-            print(correlation_matrix)
 
             # Display correlations between top notes and rubrics
             note_columns = notes_dummies_top.columns
@@ -455,6 +451,34 @@ with DAG(
 
             plt.tight_layout()
             file_name = f'{decade}_{gender}_notes_categories_correlation.png'
+            file_path_notes_categories_correlation = os.path.join(current_dir, folder_name, file_name)
+            plt.savefig(file_path_notes_categories_correlation, bbox_inches='tight')
+
+            ##############
+            ## CORRELATION (categories - rubrics)
+            ##############
+
+            # Step 2: Combine the binary top notes columns with the rubrics
+            df_combined = pd.concat(
+                [df_encoded_categories, df_filtered[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']]],
+                axis=1)
+
+            # Step 3: Compute the correlation matrix
+            correlation_matrix = df_combined.corr()
+
+            # Display correlations between top notes and rubrics
+            rubric_columns = ['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']
+            category_columns = df_encoded_categories.columns
+
+            correlation_categories_rubrics = correlation_matrix.loc[category_columns, rubric_columns]
+
+            # Step 4: Visualize the correlation matrix using seaborn
+            plt.figure(figsize=(18, 16))
+            sns.heatmap(correlation_categories_rubrics, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
+            plt.title(f"Correlation Between Top {n} Notes and Categories")
+
+            plt.tight_layout()
+            file_name = f'{decade}_{gender}_categories_rubrics_correlation.png'
             file_path_notes_categories_correlation = os.path.join(current_dir, folder_name, file_name)
             plt.savefig(file_path_notes_categories_correlation, bbox_inches='tight')
 
