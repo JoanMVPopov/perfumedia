@@ -15,6 +15,13 @@ from utilities.ListLinkScraper import link_scrape
 from airflow.utils.dates import days_ago
 from airflow.models.variable import Variable
 import pandas as pd
+
+from utilities.basic_analysis import calculate_basic_stats_and_diagrams
+from utilities.brands_basic_rubrics_stats import calculate_basic_brand_rubric_stats_table
+from utilities.categories_avg_piecharts import get_avg_categories_piecharts
+from utilities.correlation import get_corr_notes_rubrics, calculate_correlation_and_graphs
+from utilities.notes_histograms import get_histograms_for_notes
+from utilities.rubric_progression_plots import calculate_rubric_progression_throughout_decades
 from utilities.ssh_tunnel import transmit_data_through_ssh_tunnel
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -82,44 +89,11 @@ with DAG(
         over_index = profile.index(over)
 
 
-        # If the style leans toward selected gender, return the row
+        # if the style leans toward selected gender, return the row
         if values[select_index] > values[over_index]:
             return True
         else:
             return False
-
-
-    def get_category_avg_pie_chart(df, category='type', threshold=1):
-        categories = df[category].apply(lambda x: ast.literal_eval(x))
-        numbers = df[f'{category}_numbers'].apply(lambda x: ast.literal_eval(x))
-
-        dictionary = dict()
-
-        for i, category_list in enumerate(categories):
-            for j, category_j in enumerate(category_list):
-                # if falsy value (still not in dictionary)
-                if not dictionary.get(category_j):
-                    dictionary[category_j] = numbers.iloc[i][j]
-                else:
-                    dictionary[category_j] += numbers.iloc[i][j]
-
-
-        # get the average per category
-        avg_dict = {key: (value / len(categories)) for key, value in dictionary.items()}
-
-        filtered_dict = {}
-        small_value_sum = 0
-
-        for key, value in avg_dict.items():
-            if value < threshold:
-                small_value_sum += value  # Add small values to 'Others'
-            else:
-                filtered_dict[key] = value
-
-        if small_value_sum > 0:
-            filtered_dict['Others'] = small_value_sum
-
-        return filtered_dict
 
 
     def decade_info(decade: int | str = 'All'):
@@ -159,7 +133,6 @@ with DAG(
     def decade_gender_info(decade: int | str = 'All', gender: str = 'All'):
         try:
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            # define the folder and file path
             folder_name = 'temp'
             file_name = f'{decade}.csv'
             file_path = os.path.join(current_dir, folder_name, file_name)
@@ -183,397 +156,34 @@ with DAG(
 
             df_filtered = df_filtered.reset_index(drop=True)
 
-            df_filtered_rubrics_only = df_filtered[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']]
+            # Get basic stats (mean, median, mode, etc.) in a table format
+            # Also create Boxplots, QQ plots, Violin plots, Pairplot
+            calculate_basic_stats_and_diagrams(decade, gender, df,
+                          current_dir, folder_name)
 
-            # Calculate statistics
-            summary = df_filtered_rubrics_only.describe()
-            median = df_filtered_rubrics_only.median()
-            # if multiple modes, select first one
-            mode = df_filtered_rubrics_only.mode().iloc[0]
-
-            summary_transposed = summary.T  # Transpose summary statistics
-            summary_transposed['median'] = median
-            summary_transposed['mode'] = mode
-
-            # Split the table into two parts
-            columns_part1 = ['count', 'mean', 'median', 'mode', 'std']
-            columns_part2 = ['25%', '50%', '75%', 'min', 'max', ]
-
-            fig, axes = plt.subplots(2, 1, figsize=(5, 5))
-
-            # First part of the table
-            axes[0].axis('off')
-            part1_table = axes[0].table(
-                cellText=summary_transposed[columns_part1].round(2).values,
-                rowLabels=summary_transposed.index,
-                colLabels=columns_part1,
-                loc='center'
-            )
-
-            # Second part of the table
-            axes[1].axis('off')
-            part2_table = axes[1].table(
-                cellText=summary_transposed[columns_part2].round(2).values,
-                rowLabels=summary_transposed.index,
-                colLabels=columns_part2,
-                loc='center'
-            )
-
-            # Adjust font size and layout
-            for table in [part1_table, part2_table]:
-                table.auto_set_font_size(False)
-                table.set_fontsize(10)
-
-            plt.tight_layout()
-
-            file_name = f'{decade}_{gender}.png'
-            file_path_save_table = os.path.join(current_dir, folder_name, file_name)
-
-            # Save the figure
-            plt.savefig(file_path_save_table, bbox_inches='tight')
-            plt.close(fig)
-
-            # Box Plot
-            plt.figure(figsize=(8, 6))
-            sns.boxplot(data=df_filtered_rubrics_only)
-            plt.title("Box Plots of Ratings")
-
-            file_name = f'{decade}_{gender}_box_plots.png'
-            file_path_box_plots = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_box_plots, bbox_inches='tight')
-
-            # QQ Plots
-            fig, axes = plt.subplots(len(df_filtered_rubrics_only.columns), 1, figsize=(6, 14))
-            for i, col in enumerate(df_filtered_rubrics_only.columns):
-                #print(df_filtered_rubrics_only[col])
-                stats.probplot(df_filtered_rubrics_only[col], dist="norm", plot=axes[i])
-                axes[i].set_title(f"QQ Plot for {col}")
-                axes[i].set_xlabel("Ordered value quantiles")
-                axes[i].set_xlabel("Normal quantiles")
-            plt.tight_layout()
-
-            file_name = f'{decade}_{gender}_qq_plots.png'
-            file_path_qq_plots = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_qq_plots, bbox_inches='tight')
-
-            # Pairplot with histograms
-            g = sns.pairplot(df_filtered_rubrics_only, corner=True, diag_kind=None)
-
-            # Replace diagonal elements with custom histograms
-            for i in range(len(df_filtered_rubrics_only.columns)):
-                ax = g.axes[i, i]  # Access the diagonal subplot
-                if ax is not None:  # Check if the axis exists
-                    g.fig.delaxes(ax)  # Remove the existing axis
-                    new_ax = g.fig.add_subplot(len(df_filtered_rubrics_only.columns), len(df_filtered_rubrics_only.columns),
-                                               i * len(df_filtered_rubrics_only.columns) + i + 1)  # Recreate axis
-
-                    ax = sns.histplot(df_filtered_rubrics_only.iloc[:, i], bins=15, kde=False, ax=new_ax,
-                                      color="skyblue")  # Add histogram
-                    ax.set_title(f"Histogram of {df_filtered_rubrics_only.columns[i]}", fontsize=10, fontweight='bold')  # Add title
-
-            g.fig.subplots_adjust(hspace=0.5, wspace=0.5)
-
-            file_name = f'{decade}_{gender}_pairplots.png'
-            file_path_pairplots = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_pairplots, bbox_inches='tight')
-
-            # Violin Plot
-            plt.figure(figsize=(8, 6))
-            sns.violinplot(data=df_filtered_rubrics_only)
-            plt.title("Violin Plots of Ratings")
-
-            file_name = f'{decade}_{gender}_violin_plots.png'
-            file_path_violin_plots = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_violin_plots, bbox_inches='tight')
-
-            #############
-            ## NOTES HISTOGRAM
-            #############
-
-            notes = df_filtered['notes'].apply(lambda x: ast.literal_eval(x))
-
-            dictionary_notes = dict()
-
-            for note_list in notes:
-                for current_note in note_list:
-                    if not dictionary_notes.get(current_note):
-                        dictionary_notes[current_note] = 1
-                    else:
-                        dictionary_notes[current_note] += 1
-
-            num_unique_notes = len(dictionary_notes)
-            n = 25 if num_unique_notes > 25 else num_unique_notes
-
-            # select top n most frequently used notes (since it would not look nice if we displayed all notes)
-            top_notes = sorted(dictionary_notes.items(), key=lambda x: x[1], reverse=True)[:n]
-
-            notes = [item[0] for item in top_notes]
-            values = [item[1] for item in top_notes]
-
-            plt.figure(figsize=(16, 8))
-            plt.bar(notes, values, color="#C96868")
-            plt.xlabel('Notes')
-            plt.ylabel('Number of perfumes')
-            plt.title(f'Top {n} most frequently used notes')
-
-            # force y-axis to display only rounded numbers
-            plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
-
-            plt.tight_layout()
-
-            plt.subplots_adjust(bottom=0.25)  # Increase the bottom margin
-
-            # add text below the x-axis label
-            plt.figtext(0.5, 0.05, f'Total number of unique notes in dataset: {num_unique_notes}', ha='center', fontsize=14)
-
-            # rotate ticks to reduce text overlap
-            plt.xticks(rotation=45, ha="right", fontsize=8)
-
-            file_name = f'{decade}_{gender}_notes_histogram.png'
-            file_path_notes_histogram = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_notes_histogram, bbox_inches='tight')
-
-            #############
-            ## PIE CHARTS
-            #############
+            # Notes histograms
+            get_histograms_for_notes(decade, gender, df_filtered, 25,
+                            current_dir, folder_name)
 
             categories = ['type', 'style', 'season', 'occasion']
-            threshold = 1
 
-            fig, axs = plt.subplots(4, 1, figsize=(12, 36))
+            # Pie charts
+            get_avg_categories_piecharts(decade, gender, df_filtered, 1,
+                                         categories, current_dir, folder_name)
 
-            for i, category in enumerate(categories):
-                dictionary = get_category_avg_pie_chart(df_filtered, category, threshold)
+            # Correlation tables
+            calculate_correlation_and_graphs(decade, gender, df_filtered, 50,
+                                         categories, current_dir, folder_name)
 
-                # create a pie chart from the dictionary values
-                labels = dictionary.keys()
-                sizes = dictionary.values()
+            # Brands table
+            calculate_basic_brand_rubric_stats_table(decade, gender, df_filtered, 10,
+                                         current_dir, folder_name)
 
-                axs[i].pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
-                axs[i].set_title(f'Pie Chart of average {category} values')
-
-                if 'Others' in dictionary:
-                    fig.text(0.5, 0.01, f'"Others" includes categories below the threshold of {threshold}% per pie',
-                                ha='center', fontsize=10, color='gray')
-
-
-            plt.tight_layout()
-            file_name = f'{decade}_{gender}_avg_categories_piecharts.png'
-            file_path_categories_piecharts = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_categories_piecharts, bbox_inches='tight')
-
-            ##############
-            ## CORRELATION (notes - rubrics)
-            ##############
-
-            # Step 1: Flatten the notes column into binary columns
-            df_filtered['notes'] = df_filtered['notes'].apply(lambda x: ast.literal_eval(x))
-            notes_dummies = df_filtered['notes'].explode().str.get_dummies().groupby(level=0).max()
-
-            # Step 1.1: Get the top n most frequent notes
-            n = 50
-            note_counts = df_filtered['notes'].explode().value_counts()
-            top_notes = note_counts.head(n).index
-
-            # Filter the notes dummies to include only the top n notes
-            notes_dummies_top = notes_dummies[top_notes]
-
-            # Step 2: Combine the binary top notes columns with the rubrics
-            df_combined = pd.concat([notes_dummies_top, df_filtered[['scent', 'longevity', 'sillage',  'value_for_money']]],
-                                    axis=1)
-
-            # Step 3: Compute the correlation matrix
-            correlation_matrix = df_combined.corr()
-
-            # Display correlations between top notes and rubrics
-            note_columns = notes_dummies_top.columns
-            rubric_columns = ['scent', 'longevity', 'sillage', 'value_for_money']
-
-            correlation_notes_rubrics = correlation_matrix.loc[note_columns, rubric_columns]
-
-            # Step 4: Visualize the correlation matrix using seaborn
-            plt.figure(figsize=(18, 16))
-            sns.heatmap(correlation_notes_rubrics, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-            plt.title(f"Correlation Between Top {n} Notes and Rubrics")
-
-            plt.tight_layout()
-            file_name = f'{decade}_{gender}_notes_rubrics_correlation.png'
-            file_path_notes_rubrics_correlation = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_notes_rubrics_correlation, bbox_inches='tight')
-
-            ##############
-            ## CORRELATION (notes - categories)
-            ##############
-
-            df_encoded_categories = pd.DataFrame()
-
-            for category in categories:
-                df_type = df_filtered[category].apply(lambda x: ast.literal_eval(x))
-                df_type_nums = df_filtered[f'{category}_numbers'].apply(lambda x: ast.literal_eval(x))
-
-                dictionary = dict()
-
-                for i, type_list in enumerate(df_type):
-                    for j, specific_type in enumerate(type_list):
-                        prefill_list = None
-                        dict_val = dictionary.get(specific_type)
-
-                        if not dict_val:
-                            prefill_list = [0] * len(df_type)
-                        else:
-                            prefill_list = dict_val
-
-                        prefill_list[i] = df_type_nums.iloc[i][j]
-                        dictionary[specific_type] = prefill_list
-
-                df_encoded_categories = pd.concat(
-                    [df_encoded_categories, pd.DataFrame(dictionary)], axis=1
-                )
-
-            # Step 2: Combine the binary top notes columns with the rubrics
-            df_combined = pd.concat(
-                [notes_dummies_top, df_encoded_categories],
-                axis=1)
-
-            # Step 3: Compute the correlation matrix
-            correlation_matrix = df_combined.corr()
-
-            # Display correlations between top notes and rubrics
-            note_columns = notes_dummies_top.columns
-            category_columns = df_encoded_categories.columns
-
-            correlation_notes_categories = correlation_matrix.loc[note_columns, category_columns]
-
-            # Step 4: Visualize the correlation matrix using seaborn
-            plt.figure(figsize=(18, 16))
-            sns.heatmap(correlation_notes_categories, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-            plt.title(f"Correlation Between Top {n} Notes and Categories")
-
-            plt.tight_layout()
-            file_name = f'{decade}_{gender}_notes_categories_correlation.png'
-            file_path_notes_categories_correlation = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_notes_categories_correlation, bbox_inches='tight')
-
-            ##############
-            ## CORRELATION (categories - rubrics)
-            ##############
-
-            # Step 2: Combine the binary top notes columns with the rubrics
-            df_combined = pd.concat(
-                [df_encoded_categories, df_filtered[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']]],
-                axis=1)
-
-            # Step 3: Compute the correlation matrix
-            correlation_matrix = df_combined.corr()
-
-            # Display correlations between top notes and rubrics
-            rubric_columns = ['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']
-            category_columns = df_encoded_categories.columns
-
-            correlation_categories_rubrics = correlation_matrix.loc[category_columns, rubric_columns]
-
-            # Step 4: Visualize the correlation matrix using seaborn
-            plt.figure(figsize=(18, 16))
-            sns.heatmap(correlation_categories_rubrics, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-            plt.title(f"Correlation Between Top {n} Notes and Categories")
-
-            plt.tight_layout()
-            file_name = f'{decade}_{gender}_categories_rubrics_correlation.png'
-            file_path_notes_categories_correlation = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_notes_categories_correlation, bbox_inches='tight')
-
-            ##############
-            ## BRANDS
-            ##############
-
-            # Aggregation step
-            df_brands_agg = df_filtered.groupby('brand')[
-                ['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']].agg(['mean'])
-            df_counts = df_filtered.groupby('brand').size().reset_index(name='count')
-
-            # Flatten the MultiIndex for column labels in df_brands_agg
-            df_brands_agg.columns = [col[0] if isinstance(col, tuple) else col for col in df_brands_agg.columns]
-
-            # Merge counts with aggregated data
-            df_brands_agg = df_counts.merge(df_brands_agg, on='brand')
-
-            # Select the top n based on count
-            n = len(df_brands_agg) if (len(df_brands_agg) <= 10) else 10
-            df_brands_agg = df_brands_agg.sort_values('count', ascending=False).head(n)
-
-            df_brands_agg.reset_index(inplace=True, drop=True)
-
-            # Add note for superscript meaning
-            note = "Colored cells indicate highest value in column"
-
-            # Create the table
-            plt.figure(figsize=(10, 2))
-            current_table = plt.table(
-                cellText=df_brands_agg.iloc[:, 1:].values.round(2),
-                rowLabels=df_brands_agg.iloc[:, 0].values,
-                colLabels=df_brands_agg.columns[1:],
-                loc='center'
-            )
-
-            for i, row in df_brands_agg.iterrows():
-                for j, col in enumerate(df_brands_agg.columns[1:]):
-                    is_max = row[col] == df_brands_agg[col].max() if col != 'count' else False
-                    if is_max:
-                        cell = current_table.get_celld()[i + 1, j]  # +1 for header row
-                        cell.set_facecolor('#C96868')
-
-            # Add a note below the table
-            plt.text(0.5, 0.01, note, ha='center', fontsize=10)
-
-            # Adjust font size
-            current_table.auto_set_font_size(False)
-            current_table.set_fontsize(10)
-
-            # Hide the axes
-            plt.axis('off')
-
-            plt.tight_layout()
-            file_name = f'{decade}_{gender}_brands_stats.png'
-            file_path_brands_stats = os.path.join(current_dir, folder_name, file_name)
-            plt.savefig(file_path_brands_stats, bbox_inches='tight')
-
-            ##############
-            ## PROGRESSION
-            ##############
-
+            # Rubrics progression
             # only do it for all decades, per gender, since info is not enough for further granularity
             if decade == 'All':
-                # reset index otherwise rel_year becomes index
-                # selects all 5 rubric columns + years and excludes everything else
-                df_agg = df_filtered.groupby('rel_year')[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']].agg(['mean', 'std']).reset_index()
-
-                # if year has only 1 record, std will be NaN and the graph will look funny
-                df_agg.fillna(0.1, inplace=True)
-
-                fig, axs = plt.subplots(5, 1, figsize=(12, 30))
-
-                # range 5 because of 5 rubrics
-                for i in range(5):
-                    axs[i].plot(df_agg.iloc[:, 0], df_agg.iloc[:, 2 * i + 1], label='Mean Value', color='#C96868',
-                             linewidth=2, marker='o')
-
-                    # adding the shaded region for std
-                    axs[i].fill_between(df_agg.iloc[:, 0],
-                                     df_agg.iloc[:, 2 * i + 1] - df_agg.iloc[:, 2 * i + 2],
-                                     df_agg.iloc[:, 2 * i + 1] + df_agg.iloc[:, 2 * i + 2],
-                                     color='#FFF4EA', alpha=1, label='±1 Std. Dev.')
-
-                    axs[i].set_title(f'Yearly Averages with Standard Deviation for {df_agg.columns[2 * i + 1][0]}', fontsize=16)
-                    axs[i].set_xlabel('Year', fontsize=12)
-                    axs[i].set_ylabel('Average Value', fontsize=12)
-                    plt.legend(fontsize=12)
-                    plt.grid(alpha=0.3)
-
-                plt.tight_layout()
-
-                file_name = f'{decade}_{gender}_avg_rubric_progression.png'
-                file_path_rubric_progression = os.path.join(current_dir, folder_name, file_name)
-                plt.savefig(file_path_rubric_progression, bbox_inches='tight')
+                calculate_rubric_progression_throughout_decades(decade, gender, df_filtered,
+                                         current_dir, folder_name)
 
         except Exception as e:
             print(e)
