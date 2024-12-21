@@ -104,18 +104,19 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: production.Dockerfile
-      args:
-        VUE_APP_API_URL: ${VUE_APP_API_URL}
+      dockerfile: Dockerfile
+#      dockerfile: production.Dockerfile
+#      args:
+#        VUE_APP_API_URL: ${VUE_APP_API_URL}
     restart: always
     env_file:
       - .env
-#    volumes:
-#      - ./frontend:/app/frontend
-#    ports:
-#      - "3000:8080"
+    volumes:
+      - ./frontend:/app/frontend
     ports:
-      - "3000:80"
+      - "3000:8080"
+#    ports:
+#      - "3000:80"
     depends_on:
       - backend
     networks:

@@ -4,17 +4,17 @@ FROM node:14-alpine
 
 RUN npm cache clean --force
 
-# install simple http server for serving static content
-RUN npm install -g http-server --verbose
-
 # make the 'app' folder the current working directory
-WORKDIR /app
+WORKDIR /app/frontend
 
 # copy both 'package.json' and 'package-lock.json' (if available)
 COPY package*.json ./
 
+# install simple http server for serving static content
+RUN npm install -g http-server --verbose
+
 # install project dependencies
-RUN npm install
+RUN npm install && npm update
 
 #----------
 
@@ -40,4 +40,5 @@ RUN npm install
 #CMD cd ./frontend && npm run build && http-server dist
 
 EXPOSE 8080
-CMD cd ./frontend && npm run serve
+#CMD cd ./frontend && npm run serve
+CMD npm run serve

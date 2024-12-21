@@ -10,4 +10,5 @@ from backend.etl import views
 
 urlpatterns = [
     path("latest-products/", views.LatestProductsList.as_view()),
+    path("eda-data/", views.EDAData.as_view())
 ]

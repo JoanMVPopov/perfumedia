@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 // import HomeView from '../views/HomeView.vue'
 import HomePage from '../views/HomePage.vue';
 import PlaceholderPage from '../views/PlaceholderPage.vue';
+import EDAPage from "@/views/EDAPage.vue";
 
 const routes = [
   // {
@@ -20,7 +21,7 @@ const routes = [
   { path: '/', name: 'Home', component: HomePage },
   { path: '/clusters', name: 'Clusters', component: PlaceholderPage },
   { path: '/etl', name: 'ETL', component: PlaceholderPage },
-  { path: '/eda', name: 'EDA', component: PlaceholderPage },
+  { path: '/eda', name: 'EDA', component: EDAPage },
   { path: '/classification', name: 'Classification', component: PlaceholderPage },
   { path: '/about', name: 'About', component: PlaceholderPage },
 ]
