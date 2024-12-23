@@ -1,6 +1,6 @@
 <template>
   <!-- Full-page container so the layout can stretch -->
-  <div class="min-h-screen bg-[#fcece4] flex flex-col">
+  <div class="min-h-screen bg-[#FFF4EA] flex flex-col">
     <!-- (1) Filter Section -->
     <div class="container mx-auto p-6">
       <h1 class="text-2xl font-bold text-center mb-4">Select Filters</h1>
@@ -137,7 +137,7 @@
                 class="relative flex border-b pb-4 mb-4"
               >
                 <!-- The image (fills column width) -->
-                <div class="flex-shrink-0 pr-4">
+                <div class="flex-shrink-0 max-w-[50%]">
                   <img
                     :src="'data:image/png;base64,' + image.base64"
                     alt="Decoded Image"
@@ -148,7 +148,7 @@
                 <!-- "More Info" box & Sticky Explanation -->
                 <div class="relative flex-grow">
                   <div
-                    class="w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                    class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
                            rounded shadow-sm flex items-center justify-center
                            cursor-pointer select-none"
                     @click="toggleExplanation(index)"
@@ -159,7 +159,7 @@
                   <transition name="fade">
                     <div
                       v-if="expandedIndices.includes(index)"
-                      class="sticky top-20 z-10 bg-white p-4 shadow-md rounded mt-2"
+                      class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                     >
                       <h3 class="font-bold mb-2">Explanation</h3>
                       <p class="text-sm">

@@ -158,7 +158,7 @@ with DAG(
 
             # Get basic stats (mean, median, mode, etc.) in a table format
             # Also create Boxplots, QQ plots, Violin plots, Pairplot
-            calculate_basic_stats_and_diagrams(decade, gender, df,
+            calculate_basic_stats_and_diagrams(decade, gender, df_filtered,
                           current_dir, folder_name)
 
             # Notes histograms
