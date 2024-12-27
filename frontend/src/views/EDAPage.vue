@@ -134,7 +134,7 @@
               <li
                 v-for="(image, index) in images[0]"
                 :key="index"
-                class="relative flex border-b pb-4 mb-4"
+                class="relative flex justify-center border-b pb-4 mb-4"
               >
                 <!-- The image (fills column width) -->
                 <div class="flex-shrink-0 max-w-[50%]">
@@ -146,7 +146,11 @@
                 </div>
 
                 <!-- "More Info" box & Sticky Explanation -->
-                <div class="relative flex-grow">
+                <div class="relative pl-2"
+                :class="[
+                  'transition-all duration-1000',
+                  expandedIndices.includes(index) ? 'w-80' : 'w-24'
+                ]">
                   <div
                     class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
                            rounded shadow-sm flex items-center justify-center
@@ -163,8 +167,9 @@
                     >
                       <h3 class="font-bold mb-2">Explanation</h3>
                       <p class="text-sm">
-                        This is a detailed explanation for {{ image.filename }}.<br />
-                        Multiple items can be open at once!
+<!--                        This is a detailed explanation for {{ image.filename }}.<br />-->
+<!--                        Multiple items can be open at once!-->
+                        {{displayedText[index % textToDisplay.length]}}
                       </p>
                     </div>
                   </transition>
@@ -239,7 +244,17 @@ export default {
       ],
       images: [[], []],
       error: "",
-      expandedIndices: [] // multiple open explanations in single-col mode
+      expandedIndices: [], // multiple open explanations in single-col mode
+      textToDisplay: [
+          "This is the first placeholder text",
+          "This is the second placeholder text",
+          "This is the third one"
+      ],
+      displayedText: [
+          "",
+          "",
+          ""
+      ]
     };
   },
   computed: {
@@ -248,6 +263,22 @@ export default {
     },
   },
   methods: {
+    typeText(textPremade, textIndex) {
+      let index = 0;
+
+      if (this.displayedText[textIndex] !== "") {
+        this.displayedText[textIndex] = "";
+      }
+
+      const interval = setInterval(() => {
+        if (index < textPremade.length) {
+          this.displayedText[textIndex] += textPremade[index];
+          index++;
+        } else {
+          clearInterval(interval); // Stop when text is fully typed
+        }
+      }, 20);
+    },
     toggleSecondOptions() {
       this.showSecondOptions = !this.showSecondOptions;
     },
@@ -291,8 +322,10 @@ export default {
       const i = this.expandedIndices.indexOf(index);
       if (i > -1) {
         this.expandedIndices.splice(i, 1);
+        this.displayedText[index % this.textToDisplay.length] = ""
       } else {
         this.expandedIndices.push(index);
+        this.typeText(this.textToDisplay[index % this.textToDisplay.length], index % this.textToDisplay.length)
       }
     },
   },
@@ -303,7 +336,7 @@ export default {
 /* Fade transition for the collapsible explanation box */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 1s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
