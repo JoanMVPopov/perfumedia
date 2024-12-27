@@ -6,10 +6,10 @@
       <nav class="flex flex-col space-y-2">
         <!-- Clickable anchor links to each section -->
         <a href="#ratings" class="text-black-500 hover:underline">
-          I. RATINGS
+          I. Ratings
         </a>
         <a href="#ratings-progression" class="text-black-500 hover:underline">
-          II. RATINGS PROGRESSION
+          II. Ratings progression
         </a>
         <a href="#categories-and-notes" class="text-black-500 hover:underline">
           III. Categories &amp; Notes
@@ -27,7 +27,7 @@
     <div class="flex-1 p-6">
       <!-- ~~~~~ SECTION I: RATINGS ~~~~~ -->
       <section id="ratings" class="mb-12">
-        <h1 class="text-2xl font-bold mb-4">I. RATINGS</h1>
+        <h1 class="text-2xl font-bold mb-4">I. Ratings</h1>
 
         <!-- ========== FILTERS FOR RATINGS ========== -->
         <div class="mb-6">
@@ -113,7 +113,7 @@
             class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md
                    hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            Get RATINGS
+            Get Ratings
           </button>
         </div>
 
@@ -129,7 +129,7 @@
             v-if="images.ratings[0]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">RATINGS - Set 1</h2>
+            <h2 class="text-lg font-bold mb-2 text-center">Ratings - Set 1</h2>
 
             <!-- If two columns => just images. If single col => typed explanation logic. -->
             <div
@@ -143,7 +143,7 @@
                   class="relative flex justify-center items-stretch border-b pb-4 mb-4"
                 >
                   <!-- The image -->
-                  <div class="flex-shrink-0 max-w-[50%]">
+                  <div ref="imageViewer" class="flex-shrink-0 max-w-[70%]">
                     <img
                       :src="'data:image/png;base64,' + image.base64"
                       alt="Decoded Image"
@@ -193,11 +193,13 @@
                   :key="'rat1-col2-' + index"
                   class="border-b pb-4 mb-4"
                 >
-                  <img
+                  <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
                     alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                  />
+                    />
+                  </div>
                 </li>
               </ul>
             </div>
@@ -208,7 +210,7 @@
             v-if="showSecondOptions.ratings && images.ratings[1]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">RATINGS - Set 2</h2>
+            <h2 class="text-lg font-bold mb-2 text-center">Ratings - Set 2</h2>
             <div class="overflow-y-auto h-full">
               <ul>
                 <li
@@ -216,11 +218,13 @@
                   :key="'rat2-' + index"
                   class="border-b pb-4 mb-4"
                 >
-                  <img
+                  <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
                     alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                  />
+                    />
+                  </div>
                 </li>
               </ul>
             </div>
@@ -230,7 +234,7 @@
 
       <!-- ~~~~~ SECTION II: RATINGS PROGRESSION ~~~~~ -->
       <section id="ratings-progression" class="mb-12">
-        <h1 class="text-2xl font-bold mb-4">II. RATINGS PROGRESSION</h1>
+        <h1 class="text-2xl font-bold mb-4">II. Ratings progression</h1>
 
         <!-- ========== FILTERS (Progression) ========== -->
         <div class="mb-6">
@@ -304,7 +308,7 @@
             @click="fetchRatingsProgression"
             class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none"
           >
-            Get RATINGS PROGRESSION
+            Get Ratings progression
           </button>
         </div>
 
@@ -320,22 +324,79 @@
             class="flex flex-col w-full mb-4"
           >
             <h2 class="text-lg font-bold mb-2 text-center">
-              RATINGS PROGRESSION - Set 1
+              Ratings progression - Set 1
             </h2>
-            <!-- Just a simple display, no typed explanation here (but you could replicate if desired) -->
-            <ul>
-              <li
-                v-for="(image, idx) in images.ratingsProgression[0]"
-                :key="'prog1-' + idx"
-                class="border-b pb-4 mb-4"
-              >
-                <img
-                  :src="'data:image/png;base64,' + image.base64"
-                  alt="Progression Image"
-                  class="w-full h-auto rounded-md shadow-md object-contain"
-                />
-              </li>
-            </ul>
+            <div
+              v-if="!showTwoColumns('ratingsProgression')"
+              class="flex-1 h-full"
+            >
+              <ul class="space-y-6 px-2">
+                <li
+                  v-for="(image, index) in images.ratingsProgression[0]"
+                  :key="'rat1-prog1' + index"
+                  class="relative flex justify-center items-stretch border-b pb-4 mb-4"
+                >
+                  <!-- The image -->
+                  <div ref="imageViewer" class="flex-shrink-0 max-w-[70%]">
+                    <img
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
+                    />
+                  </div>
+
+                  <!-- Toggle Explanation w/ typewriter text -->
+                  <div
+                    class="relative pl-2 transition-all duration-1000"
+                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                  >
+                    <div
+                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                             rounded shadow-sm flex items-center justify-center
+                             cursor-pointer select-none"
+                      @click="toggleExplanation(index)"
+                    >
+                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                    </div>
+
+                    <transition name="fade">
+                      <div
+                        v-if="expandedIndices.includes(index)"
+                        class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
+                      >
+                        <h3 class="font-bold mb-2">Explanation</h3>
+                        <p class="text-sm">
+                          <!-- Typed text displayed here -->
+                          {{ displayedText[index % textToDisplay.length] }}
+                        </p>
+                      </div>
+                    </transition>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- If two columns => just images in a scroll container -->
+            <div
+              v-else
+              class="overflow-y-auto h-full"
+            >
+              <ul>
+                <li
+                  v-for="(image, index) in images.ratingsProgression[0]"
+                  :key="'rat1-col2-' + index"
+                  class="border-b pb-4 mb-4"
+                >
+                  <div ref="imageViewer">
+                    <img
+                    :src="'data:image/png;base64,' + image.base64"
+                    alt="Decoded Image"
+                    class="w-full h-auto rounded-md shadow-md object-contain"
+                    />
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Set 2 -->
@@ -344,7 +405,7 @@
             class="flex flex-col w-full mb-4"
           >
             <h2 class="text-lg font-bold mb-2 text-center">
-              RATINGS PROGRESSION - Set 2
+              Ratings progression - Set 2
             </h2>
             <ul>
               <li
@@ -352,11 +413,13 @@
                 :key="'prog2-' + idx"
                 class="border-b pb-4 mb-4"
               >
-                <img
+                <div ref="imageViewer">
+                  <img
                   :src="'data:image/png;base64,' + image.base64"
                   alt="Progression Image"
                   class="w-full h-auto rounded-md shadow-md object-contain"
-                />
+                  />
+                </div>
               </li>
             </ul>
           </div>
@@ -466,19 +529,77 @@
             <h2 class="text-lg font-bold mb-2 text-center">
               Categories &amp; Notes - Set 1
             </h2>
-            <ul>
-              <li
-                  v-for="(image, idx) in images.categoriesAndNotes[0]"
-                  :key="'cat1-' + idx"
+            <div
+              v-if="!showTwoColumns('categoriesAndNotes')"
+              class="flex-1 h-full"
+            >
+              <ul class="space-y-6 px-2">
+                <li
+                  v-for="(image, index) in images.categoriesAndNotes[0]"
+                  :key="'rat1-prog1' + index"
+                  class="relative flex justify-center items-stretch border-b pb-4 mb-4"
+                >
+                  <!-- The image -->
+                  <div ref="imageViewer" class="flex-shrink-0 max-w-[70%]">
+                    <img
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
+                    />
+                  </div>
+
+                  <!-- Toggle Explanation w/ typewriter text -->
+                  <div
+                    class="relative pl-2 transition-all duration-1000"
+                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                  >
+                    <div
+                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                             rounded shadow-sm flex items-center justify-center
+                             cursor-pointer select-none"
+                      @click="toggleExplanation(index)"
+                    >
+                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                    </div>
+
+                    <transition name="fade">
+                      <div
+                        v-if="expandedIndices.includes(index)"
+                        class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
+                      >
+                        <h3 class="font-bold mb-2">Explanation</h3>
+                        <p class="text-sm">
+                          <!-- Typed text displayed here -->
+                          {{ displayedText[index % textToDisplay.length] }}
+                        </p>
+                      </div>
+                    </transition>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- If two columns => just images in a scroll container -->
+            <div
+              v-else
+              class="overflow-y-auto h-full"
+            >
+              <ul>
+                <li
+                  v-for="(image, index) in images.categoriesAndNotes[0]"
+                  :key="'rat1-col2-' + index"
                   class="border-b pb-4 mb-4"
-              >
-                <img
+                >
+                  <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Categories Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
-              </li>
-            </ul>
+                    />
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Set 2 -->
@@ -495,11 +616,13 @@
                   :key="'cat2-' + idx"
                   class="border-b pb-4 mb-4"
               >
-                <img
+                <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Categories Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
+                    />
+                </div>
               </li>
             </ul>
           </div>
@@ -606,19 +729,77 @@
             <h2 class="text-lg font-bold mb-2 text-center">
               Correlation - Set 1
             </h2>
-            <ul>
-              <li
-                  v-for="(image, idx) in images.correlation[0]"
-                  :key="'corr1-' + idx"
+            <div
+              v-if="!showTwoColumns('correlation')"
+              class="flex-1 h-full"
+            >
+              <ul class="space-y-6 px-2">
+                <li
+                  v-for="(image, index) in images.correlation[0]"
+                  :key="'rat1-prog1' + index"
+                  class="relative flex justify-center items-stretch border-b pb-4 mb-4"
+                >
+                  <!-- The image -->
+                  <div ref="imageViewer" class="flex-shrink-0 max-w-[70%]">
+                    <img
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
+                    />
+                  </div>
+
+                  <!-- Toggle Explanation w/ typewriter text -->
+                  <div
+                    class="relative pl-2 transition-all duration-1000"
+                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                  >
+                    <div
+                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                             rounded shadow-sm flex items-center justify-center
+                             cursor-pointer select-none"
+                      @click="toggleExplanation(index)"
+                    >
+                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                    </div>
+
+                    <transition name="fade">
+                      <div
+                        v-if="expandedIndices.includes(index)"
+                        class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
+                      >
+                        <h3 class="font-bold mb-2">Explanation</h3>
+                        <p class="text-sm">
+                          <!-- Typed text displayed here -->
+                          {{ displayedText[index % textToDisplay.length] }}
+                        </p>
+                      </div>
+                    </transition>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- If two columns => just images in a scroll container -->
+            <div
+              v-else
+              class="overflow-y-auto h-full"
+            >
+              <ul>
+                <li
+                  v-for="(image, index) in images.correlation[0]"
+                  :key="'rat1-col2-' + index"
                   class="border-b pb-4 mb-4"
-              >
-                <img
+                >
+                 <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Correlation Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
-              </li>
-            </ul>
+                    />
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Set 2 -->
@@ -635,11 +816,13 @@
                   :key="'corr2-' + idx"
                   class="border-b pb-4 mb-4"
               >
-                <img
+                <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Correlation Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
+                    />
+                </div>
               </li>
             </ul>
           </div>
@@ -746,19 +929,77 @@
             <h2 class="text-lg font-bold mb-2 text-center">
               Brands - Set 1
             </h2>
-            <ul>
-              <li
-                  v-for="(image, idx) in images.brands[0]"
-                  :key="'brands1-' + idx"
+            <div
+              v-if="!showTwoColumns('brands')"
+              class="flex-1 h-full"
+            >
+              <ul class="space-y-6 px-2">
+                <li
+                  v-for="(image, index) in images.brands[0]"
+                  :key="'rat1-prog1' + index"
+                  class="relative flex justify-center items-stretch border-b pb-4 mb-4"
+                >
+                  <!-- The image -->
+                  <div ref="imageViewer" class="flex-shrink-0 max-w-[70%]">
+                    <img
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
+                    />
+                  </div>
+
+                  <!-- Toggle Explanation w/ typewriter text -->
+                  <div
+                    class="relative pl-2 transition-all duration-1000"
+                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                  >
+                    <div
+                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                             rounded shadow-sm flex items-center justify-center
+                             cursor-pointer select-none"
+                      @click="toggleExplanation(index)"
+                    >
+                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                    </div>
+
+                    <transition name="fade">
+                      <div
+                        v-if="expandedIndices.includes(index)"
+                        class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
+                      >
+                        <h3 class="font-bold mb-2">Explanation</h3>
+                        <p class="text-sm">
+                          <!-- Typed text displayed here -->
+                          {{ displayedText[index % textToDisplay.length] }}
+                        </p>
+                      </div>
+                    </transition>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <!-- If two columns => just images in a scroll container -->
+            <div
+              v-else
+              class="overflow-y-auto h-full"
+            >
+              <ul>
+                <li
+                  v-for="(image, index) in images.brands[0]"
+                  :key="'rat1-col2-' + index"
                   class="border-b pb-4 mb-4"
-              >
-                <img
+                >
+                  <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Brands Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
-              </li>
-            </ul>
+                    />
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <!-- Set 2 -->
@@ -775,11 +1016,13 @@
                   :key="'brands2-' + idx"
                   class="border-b pb-4 mb-4"
               >
-                <img
+                <div ref="imageViewer">
+                    <img
                     :src="'data:image/png;base64,' + image.base64"
-                    alt="Brands Image"
+                    alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                />
+                    />
+                </div>
               </li>
             </ul>
           </div>
@@ -925,7 +1168,7 @@ export default {
         // Make parallel calls
         const responses = await Promise.all(
             relevantSets.map((opts) =>
-                apiClient.get("/test/eda-data", {
+                apiClient.get("/test/eda-ratings", {
                   params: {
                     decade: opts.decade,
                     gender: opts.gender,
@@ -956,7 +1199,7 @@ export default {
 
         const responses = await Promise.all(
             relevantSets.map((opts) =>
-                apiClient.get("/test/eda-data", {
+                apiClient.get("/test/eda-ratings-prog", {
                   params: {
                     decade: opts.decade,
                     gender: opts.gender,
@@ -985,7 +1228,7 @@ export default {
 
         const responses = await Promise.all(
             relevantSets.map((opts) =>
-                apiClient.get("/test/eda-data", {
+                apiClient.get("/test/eda-cat-notes", {
                   params: {
                     decade: opts.decade,
                     gender: opts.gender,
@@ -1011,7 +1254,7 @@ export default {
 
         const responses = await Promise.all(
             relevantSets.map((opts) =>
-                apiClient.get("/test/eda-data", {
+                apiClient.get("/test/eda-correlation", {
                   params: {
                     decade: opts.decade,
                     gender: opts.gender,
@@ -1037,7 +1280,7 @@ export default {
 
         const responses = await Promise.all(
             relevantSets.map((opts) =>
-                apiClient.get("/test/eda-data", {
+                apiClient.get("/test/eda-brands", {
                   params: {
                     decade: opts.decade,
                     gender: opts.gender,
