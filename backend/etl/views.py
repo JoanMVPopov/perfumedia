@@ -23,7 +23,7 @@ class LatestProductsList(APIView):
         return Response(serializer.data)
 
 
-class EDAData(APIView):
+class EDADataRatings(APIView):
     def get(self, request):
         # # Parse the JSON body
         # body_data = json.loads(request.body)
@@ -51,20 +51,280 @@ class EDAData(APIView):
         # List image files in the folder
         image_files = []
 
+        files_needed = [
+            f"{decade}_{gender}",
+            f"{decade}_{gender}_box_plots",
+            f"{decade}_{gender}_qq_plots",
+            f"{decade}_{gender}_violin_plots",
+            f"{decade}_{gender}_pairplots"
+        ]
+
         for filename in os.listdir(folder_path):
-            print(filename)
             if os.path.isfile(os.path.join(folder_path, filename)):
                 split_text = os.path.splitext(filename)
-                print(split_text)
                 if split_text[1] != '.png':
                     continue
                 filename_no_ext = split_text[0]
-                print(filename_no_ext)
-                split_no_ext = filename_no_ext.split('_')
-                print(split_no_ext)
 
-                if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                if filename_no_ext in files_needed:
                     image_files.append(os.path.join(folder_path, filename))
+                # split_no_ext = filename_no_ext.split('_')
+                #
+                # if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                #     image_files.append(os.path.join(folder_path, filename))
+
+        if len(image_files) == 0:
+            return Response({'error': 'No images found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Convert images to Base64
+        images_base64 = []
+        for image_file in image_files:
+            with open(image_file, "rb") as img_file:
+                base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                images_base64.append({
+                    "filename": os.path.basename(image_file),
+                    "base64": base64_str
+                })
+
+        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
+
+class EDADataRatingsProgression(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # List image files in the folder
+        image_files = []
+
+        files_needed = [
+            f"{decade}_{gender}_avg_rubric_progression"
+        ]
+
+        for filename in os.listdir(folder_path):
+            if os.path.isfile(os.path.join(folder_path, filename)):
+                split_text = os.path.splitext(filename)
+                if split_text[1] != '.png':
+                    continue
+                filename_no_ext = split_text[0]
+
+                if filename_no_ext in files_needed:
+                    image_files.append(os.path.join(folder_path, filename))
+                # split_no_ext = filename_no_ext.split('_')
+                #
+                # if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                #     image_files.append(os.path.join(folder_path, filename))
+
+        if len(image_files) == 0:
+            return Response({'error': 'No images found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Convert images to Base64
+        images_base64 = []
+        for image_file in image_files:
+            with open(image_file, "rb") as img_file:
+                base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                images_base64.append({
+                    "filename": os.path.basename(image_file),
+                    "base64": base64_str
+                })
+
+        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
+class EDADataCategoriesNotes(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # List image files in the folder
+        image_files = []
+
+        files_needed = [
+            f"{decade}_{gender}_avg_categories_piecharts",
+            f"{decade}_{gender}_notes_histogram"
+        ]
+
+        for filename in os.listdir(folder_path):
+            if os.path.isfile(os.path.join(folder_path, filename)):
+                split_text = os.path.splitext(filename)
+                if split_text[1] != '.png':
+                    continue
+                filename_no_ext = split_text[0]
+
+                if filename_no_ext in files_needed:
+                    image_files.append(os.path.join(folder_path, filename))
+                # split_no_ext = filename_no_ext.split('_')
+                #
+                # if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                #     image_files.append(os.path.join(folder_path, filename))
+
+        if len(image_files) == 0:
+            return Response({'error': 'No images found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Convert images to Base64
+        images_base64 = []
+        for image_file in image_files:
+            with open(image_file, "rb") as img_file:
+                base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                images_base64.append({
+                    "filename": os.path.basename(image_file),
+                    "base64": base64_str
+                })
+
+        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
+class EDADataCorrelation(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # List image files in the folder
+        image_files = []
+
+        files_needed = [
+            f"{decade}_{gender}_categories_rubrics_correlation",
+            f"{decade}_{gender}_notes_categories_correlation",
+            f"{decade}_{gender}_notes_rubrics_correlation"
+        ]
+
+        for filename in os.listdir(folder_path):
+            if os.path.isfile(os.path.join(folder_path, filename)):
+                split_text = os.path.splitext(filename)
+                if split_text[1] != '.png':
+                    continue
+                filename_no_ext = split_text[0]
+
+                if filename_no_ext in files_needed:
+                    image_files.append(os.path.join(folder_path, filename))
+                # split_no_ext = filename_no_ext.split('_')
+                #
+                # if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                #     image_files.append(os.path.join(folder_path, filename))
+
+        if len(image_files) == 0:
+            return Response({'error': 'No images found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # Convert images to Base64
+        images_base64 = []
+        for image_file in image_files:
+            with open(image_file, "rb") as img_file:
+                base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                images_base64.append({
+                    "filename": os.path.basename(image_file),
+                    "base64": base64_str
+                })
+
+        return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
+
+class EDADataBrands(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # List image files in the folder
+        image_files = []
+
+        files_needed = [
+            f"{decade}_{gender}_brands_stats"
+        ]
+
+        for filename in os.listdir(folder_path):
+            if os.path.isfile(os.path.join(folder_path, filename)):
+                split_text = os.path.splitext(filename)
+                if split_text[1] != '.png':
+                    continue
+                filename_no_ext = split_text[0]
+
+                if filename_no_ext in files_needed:
+                    image_files.append(os.path.join(folder_path, filename))
+                # split_no_ext = filename_no_ext.split('_')
+                #
+                # if split_no_ext[0] == decade and split_no_ext[1] == gender:
+                #     image_files.append(os.path.join(folder_path, filename))
 
         if len(image_files) == 0:
             return Response({'error': 'No images found'},

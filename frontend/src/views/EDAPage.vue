@@ -25,100 +25,118 @@
 
     <!-- ========== MAIN CONTENT AREA ========== -->
     <div class="flex-1 p-6">
-      <!-- ~~~~~ SECTION I: RATINGS ~~~~~ -->
+      <!-- ~~~~~ SECTION I: RATINGS (ALREADY STYLED) ~~~~~ -->
       <section id="ratings" class="mb-12">
         <h1 class="text-2xl font-bold mb-4">I. Ratings</h1>
 
         <!-- ========== FILTERS FOR RATINGS ========== -->
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold">Select Filters</h2>
+        <div class="mb-6 flex flex-col">
+          <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
 
-          <!-- First row: Set 1 -->
-          <div class="flex space-x-4 mt-2">
-            <!-- Decade (Set 1) -->
-            <div class="flex flex-col w-32">
-              <label for="ratingsDecade1" class="text-sm font-medium">Decade</label>
-              <select
-                v-model="filters.ratings.set1.decade"
-                id="ratingsDecade1"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
+          <!-- First row: Set 1, Compare With button, and Set 2 -->
+          <div class="flex"
+          :class="!showSecondOptions.ratings
+          ? 'items-center space-x-6'
+          : 'items-center justify-center gap-x-20'">
+            <!-- Set 1 -->
+            <div class="flex space-x-4">
+              <!-- Decade (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="ratingsDecade1" class="text-sm font-medium">Decade</label>
+                <select
+                  v-model="filters.ratings.set1.decade"
+                  id="ratingsDecade1"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <!-- Gender (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="ratingsGender1" class="text-sm font-medium">Gender</label>
+                <select
+                  v-model="filters.ratings.set1.gender"
+                  id="ratingsGender1"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
-            <!-- Gender (Set 1) -->
-            <div class="flex flex-col w-32">
-              <label for="ratingsGender1" class="text-sm font-medium">Gender</label>
-              <select
-                v-model="filters.ratings.set1.gender"
-                id="ratingsGender1"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+
+            <!-- Compare With button -->
+            <div>
+              <button
+                v-if="!showSecondOptions.ratings"
+                @click="toggleSecondOptions('ratings')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
               >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                Compare with
+              </button>
+
+              <button
+                v-else
+                @click="toggleSecondOptions('ratings')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Remove comparison
+              </button>
+            </div>
+
+            <!-- Set 2 (shown if toggled) -->
+            <div v-if="showSecondOptions.ratings" class="flex space-x-4">
+              <!-- Decade (Set 2) -->
+              <div class="flex flex-col w-32">
+                <label for="ratingsDecade2" class="text-sm font-medium">Decade</label>
+                <select
+                  v-model="filters.ratings.set2.decade"
+                  id="ratingsDecade2"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <!-- Gender (Set 2) -->
+              <div class="flex flex-col w-32">
+                <label for="ratingsGender2" class="text-sm font-medium">Gender</label>
+                <select
+                  v-model="filters.ratings.set2.gender"
+                  id="ratingsGender2"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- Plus button toggling second set -->
-          <div class="mt-2">
+          <div class="mt-4"
+          :class="!showSecondOptions.ratings
+          ? 'self-start'
+          : 'self-center'">
             <button
-              @click="toggleSecondOptions('ratings')"
-              class="text-indigo-600 text-xl font-bold focus:outline-none hover:text-indigo-800"
+              @click="fetchRatings"
+              class="bg-[#C96868] text-white py-2 px-4 rounded-md
+                     hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              +
+              Get Ratings
             </button>
           </div>
-
-          <!-- Second row: Set 2 (shown if toggled) -->
-          <div v-if="showSecondOptions.ratings" class="flex space-x-4 mt-2">
-            <!-- Decade (Set 2) -->
-            <div class="flex flex-col w-32">
-              <label for="ratingsDecade2" class="text-sm font-medium">Decade</label>
-              <select
-                v-model="filters.ratings.set2.decade"
-                id="ratingsDecade2"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <!-- Gender (Set 2) -->
-            <div class="flex flex-col w-32">
-              <label for="ratingsGender2" class="text-sm font-medium">Gender</label>
-              <select
-                v-model="filters.ratings.set2.gender"
-                id="ratingsGender2"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- "Get Images" button -->
-          <button
-            @click="fetchRatings"
-            class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md
-                   hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            Get Ratings
-          </button>
         </div>
 
         <!-- ========== DISPLAY RATINGS IMAGES ========== -->
-        <!-- We check if we have 2 sets => show 2 columns, else show 1 column with typed explanation. -->
         <div
           :class="showTwoColumns('ratings')
             ? 'grid grid-cols-2 gap-6'
@@ -129,9 +147,6 @@
             v-if="images.ratings[0]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">Ratings - Set 1</h2>
-
-            <!-- If two columns => just images. If single col => typed explanation logic. -->
             <div
               v-if="!showTwoColumns('ratings')"
               class="flex-1 h-full"
@@ -157,7 +172,7 @@
                     :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
-                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                      class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
                       @click="toggleExplanation(index)"
@@ -172,7 +187,6 @@
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          <!-- Typed text displayed here -->
                           {{ displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
@@ -195,9 +209,9 @@
                 >
                   <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -205,12 +219,11 @@
             </div>
           </div>
 
-          <!-- ====== SET 2 IMAGES (only if plus sign toggled and data loaded) ====== -->
+          <!-- ====== SET 2 IMAGES ====== -->
           <div
             v-if="showSecondOptions.ratings && images.ratings[1]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">Ratings - Set 2</h2>
             <div class="overflow-y-auto h-full">
               <ul>
                 <li
@@ -220,9 +233,9 @@
                 >
                   <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -232,84 +245,114 @@
         </div>
       </section>
 
-      <!-- ~~~~~ SECTION II: RATINGS PROGRESSION ~~~~~ -->
+
+      <!-- ~~~~~ SECTION II: RATINGS PROGRESSION (UPDATED STYLING) ~~~~~ -->
       <section id="ratings-progression" class="mb-12">
         <h1 class="text-2xl font-bold mb-4">II. Ratings progression</h1>
 
         <!-- ========== FILTERS (Progression) ========== -->
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold">Select Filters</h2>
+        <div class="mb-6 flex flex-col">
+          <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
 
-          <!-- First row: Set 1 -->
-          <div class="flex space-x-4 mt-2">
-            <!-- Decade (all only) -->
-            <div class="flex flex-col w-32">
-              <label for="progressionDecade1" class="text-sm font-medium">Decade</label>
-              <select
-                v-model="filters.ratingsProgression.set1.decade"
-                id="progressionDecade1"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-              </select>
+          <!-- First row: Set 1, Compare With button, and Set 2 -->
+          <div
+            class="flex"
+            :class="!showSecondOptions.ratingsProgression
+              ? 'items-center space-x-6'
+              : 'items-center justify-center gap-x-20'"
+          >
+            <!-- Set 1 -->
+            <div class="flex space-x-4">
+              <!-- Decade (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="progressionDecade1" class="text-sm font-medium">Decade</label>
+                <select
+                  v-model="filters.ratingsProgression.set1.decade"
+                  id="progressionDecade1"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                </select>
+              </div>
+              <!-- Gender (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="progressionGender1" class="text-sm font-medium">Gender</label>
+                <select
+                  v-model="filters.ratingsProgression.set1.gender"
+                  id="progressionGender1"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
-            <!-- Gender (Set 1) -->
-            <div class="flex flex-col w-32">
-              <label for="progressionGender1" class="text-sm font-medium">Gender</label>
-              <select
-                v-model="filters.ratingsProgression.set1.gender"
-                id="progressionGender1"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+
+            <!-- Compare With button -->
+            <div>
+              <button
+                v-if="!showSecondOptions.ratingsProgression"
+                @click="toggleSecondOptions('ratingsProgression')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
               >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                Compare with
+              </button>
+
+              <button
+                v-else
+                @click="toggleSecondOptions('ratingsProgression')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Remove comparison
+              </button>
+            </div>
+
+            <!-- Set 2 (shown if toggled) -->
+            <div
+              v-if="showSecondOptions.ratingsProgression"
+              class="flex space-x-4"
+            >
+              <div class="flex flex-col w-32">
+                <label for="progressionDecade2" class="text-sm font-medium">Decade</label>
+                <select
+                  v-model="filters.ratingsProgression.set2.decade"
+                  id="progressionDecade2"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="progressionGender2" class="text-sm font-medium">Gender</label>
+                <select
+                  v-model="filters.ratingsProgression.set2.gender"
+                  id="progressionGender2"
+                  class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- Plus button toggling second set -->
-          <div class="mt-2">
+          <!-- Fetch button aligned similarly -->
+          <div
+            class="mt-4"
+            :class="!showSecondOptions.ratingsProgression
+              ? 'self-start'
+              : 'self-center'"
+          >
             <button
-              @click="toggleSecondOptions('ratingsProgression')"
-              class="text-indigo-600 text-xl font-bold focus:outline-none hover:text-indigo-800"
+              @click="fetchRatingsProgression"
+              class="bg-[#C96868] text-white py-2 px-4 rounded-md
+                     hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              +
+              Get Ratings progression
             </button>
           </div>
-
-          <!-- Second row: Set 2 (shown if toggled) -->
-          <div v-if="showSecondOptions.ratingsProgression" class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="progressionDecade2" class="text-sm font-medium">Decade</label>
-              <select
-                v-model="filters.ratingsProgression.set2.decade"
-                id="progressionDecade2"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="progressionGender2" class="text-sm font-medium">Gender</label>
-              <select
-                v-model="filters.ratingsProgression.set2.gender"
-                id="progressionGender2"
-                class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            @click="fetchRatingsProgression"
-            class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none"
-          >
-            Get Ratings progression
-          </button>
         </div>
 
         <!-- DISPLAY RATINGS PROGRESSION IMAGES -->
@@ -323,9 +366,6 @@
             v-if="images.ratingsProgression[0]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Ratings progression - Set 1
-            </h2>
             <div
               v-if="!showTwoColumns('ratingsProgression')"
               class="flex-1 h-full"
@@ -351,7 +391,7 @@
                     :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
-                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                      class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
                       @click="toggleExplanation(index)"
@@ -366,7 +406,6 @@
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          <!-- Typed text displayed here -->
                           {{ displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
@@ -389,9 +428,9 @@
                 >
                   <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -404,9 +443,6 @@
             v-if="showSecondOptions.ratingsProgression && images.ratingsProgression[1]?.length"
             class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Ratings progression - Set 2
-            </h2>
             <ul>
               <li
                 v-for="(image, idx) in images.ratingsProgression[1]"
@@ -415,9 +451,9 @@
               >
                 <div ref="imageViewer">
                   <img
-                  :src="'data:image/png;base64,' + image.base64"
-                  alt="Progression Image"
-                  class="w-full h-auto rounded-md shadow-md object-contain"
+                    :src="'data:image/png;base64,' + image.base64"
+                    alt="Progression Image"
+                    class="w-full h-auto rounded-md shadow-md object-contain"
                   />
                 </div>
               </li>
@@ -426,109 +462,135 @@
         </div>
       </section>
 
-      <!-- ~~~~~ SECTION III: Categories & Notes ~~~~~ -->
+
+      <!-- ~~~~~ SECTION III: Categories & Notes (UPDATED STYLING) ~~~~~ -->
       <section id="categories-and-notes" class="mb-12">
         <h1 class="text-2xl font-bold mb-4">III. Categories &amp; Notes</h1>
 
         <!-- FILTERS -->
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold">Select Filters</h2>
+        <div class="mb-6 flex flex-col">
+          <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
 
-          <!-- First set -->
-          <div class="flex space-x-4 mt-2">
-            <!-- Decade (Set 1) -->
-            <div class="flex flex-col w-32">
-              <label for="catDecade1" class="text-sm font-medium">Decade</label>
-              <select
+          <!-- First row: Set 1, Compare With button, and Set 2 -->
+          <div
+            class="flex"
+            :class="!showSecondOptions.categoriesAndNotes
+              ? 'items-center space-x-6'
+              : 'items-center justify-center gap-x-20'"
+          >
+            <!-- Set 1 -->
+            <div class="flex space-x-4">
+              <!-- Decade (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="catDecade1" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.categoriesAndNotes.set1.decade"
                   id="catDecade1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <!-- Gender (Set 1) -->
-            <div class="flex flex-col w-32">
-              <label for="catGender1" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <!-- Gender (Set 1) -->
+              <div class="flex flex-col w-32">
+                <label for="catGender1" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.categoriesAndNotes.set1.gender"
                   id="catGender1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <!-- Plus button -->
-          <div class="mt-2">
-            <button
+            <!-- Compare With button -->
+            <div>
+              <button
+                v-if="!showSecondOptions.categoriesAndNotes"
                 @click="toggleSecondOptions('categoriesAndNotes')"
-                class="text-indigo-600 text-xl font-bold focus:outline-none hover:text-indigo-800"
-            >
-              +
-            </button>
-          </div>
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Compare with
+              </button>
 
-          <!-- Second set -->
-          <div v-if="showSecondOptions.categoriesAndNotes" class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="catDecade2" class="text-sm font-medium">Decade</label>
-              <select
+              <button
+                v-else
+                @click="toggleSecondOptions('categoriesAndNotes')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Remove comparison
+              </button>
+            </div>
+
+            <!-- Set 2 -->
+            <div
+              v-if="showSecondOptions.categoriesAndNotes"
+              class="flex space-x-4"
+            >
+              <div class="flex flex-col w-32">
+                <label for="catDecade2" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.categoriesAndNotes.set2.decade"
                   id="catDecade2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="catGender2" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="catGender2" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.categoriesAndNotes.set2.gender"
                   id="catGender2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- Button -->
-          <button
-              @click="fetchCategoriesAndNotes"
-              class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none"
+          <!-- Action button, styled the same -->
+          <div
+            class="mt-4"
+            :class="!showSecondOptions.categoriesAndNotes
+              ? 'self-start'
+              : 'self-center'"
           >
-            Get Categories &amp; Notes
-          </button>
+            <button
+              @click="fetchCategoriesAndNotes"
+              class="bg-[#C96868] text-white py-2 px-4 rounded-md
+                     hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
+            >
+              Get Categories &amp; Notes
+            </button>
+          </div>
         </div>
 
         <!-- DISPLAY IMAGES -->
         <div
-            :class="showTwoColumns('categoriesAndNotes')
+          :class="showTwoColumns('categoriesAndNotes')
             ? 'grid grid-cols-2 gap-6'
             : 'flex justify-center items-start'"
         >
           <!-- Set 1 -->
           <div
-              v-if="images.categoriesAndNotes[0]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="images.categoriesAndNotes[0]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Categories &amp; Notes - Set 1
-            </h2>
             <div
               v-if="!showTwoColumns('categoriesAndNotes')"
               class="flex-1 h-full"
@@ -554,7 +616,7 @@
                     :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
-                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                      class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
                       @click="toggleExplanation(index)"
@@ -569,7 +631,6 @@
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          <!-- Typed text displayed here -->
                           {{ displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
@@ -579,7 +640,7 @@
               </ul>
             </div>
 
-            <!-- If two columns => just images in a scroll container -->
+            <!-- If two columns => just images -->
             <div
               v-else
               class="overflow-y-auto h-full"
@@ -592,9 +653,9 @@
                 >
                   <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -604,24 +665,21 @@
 
           <!-- Set 2 -->
           <div
-              v-if="showSecondOptions.categoriesAndNotes && images.categoriesAndNotes[1]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="showSecondOptions.categoriesAndNotes && images.categoriesAndNotes[1]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Categories &amp; Notes - Set 2
-            </h2>
             <ul>
               <li
-                  v-for="(image, idx) in images.categoriesAndNotes[1]"
-                  :key="'cat2-' + idx"
-                  class="border-b pb-4 mb-4"
+                v-for="(image, idx) in images.categoriesAndNotes[1]"
+                :key="'cat2-' + idx"
+                class="border-b pb-4 mb-4"
               >
                 <div ref="imageViewer">
-                    <img
+                  <img
                     :src="'data:image/png;base64,' + image.base64"
                     alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                    />
+                  />
                 </div>
               </li>
             </ul>
@@ -629,106 +687,133 @@
         </div>
       </section>
 
-      <!-- ~~~~~ SECTION IV: Correlation ~~~~~ -->
+
+      <!-- ~~~~~ SECTION IV: Correlation (UPDATED STYLING) ~~~~~ -->
       <section id="correlation" class="mb-12">
         <h1 class="text-2xl font-bold mb-4">IV. Correlation</h1>
 
         <!-- FILTERS -->
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold">Select Filters</h2>
+        <div class="mb-6 flex flex-col">
+          <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
 
-          <!-- First set -->
-          <div class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="corrDecade1" class="text-sm font-medium">Decade</label>
-              <select
+          <!-- First row: Set 1, Compare With, and Set 2 -->
+          <div
+            class="flex"
+            :class="!showSecondOptions.correlation
+              ? 'items-center space-x-6'
+              : 'items-center justify-center gap-x-20'"
+          >
+            <!-- Set 1 -->
+            <div class="flex space-x-4">
+              <div class="flex flex-col w-32">
+                <label for="corrDecade1" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.correlation.set1.decade"
                   id="corrDecade1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="corrGender1" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="corrGender1" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.correlation.set1.gender"
                   id="corrGender1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <!-- Plus button -->
-          <div class="mt-2">
-            <button
+            <!-- Compare With button -->
+            <div>
+              <button
+                v-if="!showSecondOptions.correlation"
                 @click="toggleSecondOptions('correlation')"
-                class="text-indigo-600 text-xl font-bold focus:outline-none hover:text-indigo-800"
-            >
-              +
-            </button>
-          </div>
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Compare with
+              </button>
 
-          <!-- Second set -->
-          <div v-if="showSecondOptions.correlation" class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="corrDecade2" class="text-sm font-medium">Decade</label>
-              <select
+              <button
+                v-else
+                @click="toggleSecondOptions('correlation')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Remove comparison
+              </button>
+            </div>
+
+            <!-- Set 2 -->
+            <div
+              v-if="showSecondOptions.correlation"
+              class="flex space-x-4"
+            >
+              <div class="flex flex-col w-32">
+                <label for="corrDecade2" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.correlation.set2.decade"
                   id="corrDecade2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="corrGender2" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="corrGender2" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.correlation.set2.gender"
                   id="corrGender2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <button
-              @click="fetchCorrelation"
-              class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none"
+          <!-- Action button -->
+          <div
+            class="mt-4"
+            :class="!showSecondOptions.correlation
+              ? 'self-start'
+              : 'self-center'"
           >
-            Get Correlation
-          </button>
+            <button
+              @click="fetchCorrelation"
+              class="bg-[#C96868] text-white py-2 px-4 rounded-md
+                     hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
+            >
+              Get Correlation
+            </button>
+          </div>
         </div>
 
         <!-- DISPLAY IMAGES -->
         <div
-            :class="showTwoColumns('correlation')
+          :class="showTwoColumns('correlation')
             ? 'grid grid-cols-2 gap-6'
             : 'flex justify-center items-start'"
         >
           <!-- Set 1 -->
           <div
-              v-if="images.correlation[0]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="images.correlation[0]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Correlation - Set 1
-            </h2>
             <div
               v-if="!showTwoColumns('correlation')"
               class="flex-1 h-full"
@@ -748,13 +833,13 @@
                     />
                   </div>
 
-                  <!-- Toggle Explanation w/ typewriter text -->
+                  <!-- Toggle Explanation -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
                     :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
-                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                      class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
                       @click="toggleExplanation(index)"
@@ -769,7 +854,6 @@
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          <!-- Typed text displayed here -->
                           {{ displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
@@ -779,7 +863,7 @@
               </ul>
             </div>
 
-            <!-- If two columns => just images in a scroll container -->
+            <!-- If two columns => just images -->
             <div
               v-else
               class="overflow-y-auto h-full"
@@ -792,9 +876,9 @@
                 >
                  <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -804,23 +888,20 @@
 
           <!-- Set 2 -->
           <div
-              v-if="showSecondOptions.correlation && images.correlation[1]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="showSecondOptions.correlation && images.correlation[1]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Correlation - Set 2
-            </h2>
             <ul>
               <li
-                  v-for="(image, idx) in images.correlation[1]"
-                  :key="'corr2-' + idx"
-                  class="border-b pb-4 mb-4"
+                v-for="(image, idx) in images.correlation[1]"
+                :key="'corr2-' + idx"
+                class="border-b pb-4 mb-4"
               >
                 <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                 </div>
               </li>
@@ -829,106 +910,133 @@
         </div>
       </section>
 
-      <!-- ~~~~~ SECTION V: Brands ~~~~~ -->
+
+      <!-- ~~~~~ SECTION V: Brands (UPDATED STYLING) ~~~~~ -->
       <section id="brands" class="mb-12">
         <h1 class="text-2xl font-bold mb-4">V. Brands</h1>
 
         <!-- FILTERS -->
-        <div class="mb-6">
-          <h2 class="text-xl font-semibold">Select Filters</h2>
+        <div class="mb-6 flex flex-col">
+          <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
 
-          <!-- First set -->
-          <div class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="brandsDecade1" class="text-sm font-medium">Decade</label>
-              <select
+          <!-- First row: Set 1, Compare With, and Set 2 -->
+          <div
+            class="flex"
+            :class="!showSecondOptions.brands
+              ? 'items-center space-x-6'
+              : 'items-center justify-center gap-x-20'"
+          >
+            <!-- Set 1 -->
+            <div class="flex space-x-4">
+              <div class="flex flex-col w-32">
+                <label for="brandsDecade1" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.brands.set1.decade"
                   id="brandsDecade1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="brandsGender1" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="brandsGender1" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.brands.set1.gender"
                   id="brandsGender1"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
-          </div>
 
-          <!-- Plus button -->
-          <div class="mt-2">
-            <button
+            <!-- Compare With button -->
+            <div>
+              <button
+                v-if="!showSecondOptions.brands"
                 @click="toggleSecondOptions('brands')"
-                class="text-indigo-600 text-xl font-bold focus:outline-none hover:text-indigo-800"
-            >
-              +
-            </button>
-          </div>
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Compare with
+              </button>
 
-          <!-- Second set -->
-          <div v-if="showSecondOptions.brands" class="flex space-x-4 mt-2">
-            <div class="flex flex-col w-32">
-              <label for="brandsDecade2" class="text-sm font-medium">Decade</label>
-              <select
+              <button
+                v-else
+                @click="toggleSecondOptions('brands')"
+                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+              >
+                Remove comparison
+              </button>
+            </div>
+
+            <!-- Set 2 -->
+            <div
+              v-if="showSecondOptions.brands"
+              class="flex space-x-4"
+            >
+              <div class="flex flex-col w-32">
+                <label for="brandsDecade2" class="text-sm font-medium">Decade</label>
+                <select
                   v-model="filters.brands.set2.decade"
                   id="brandsDecade2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
-            </div>
-            <div class="flex flex-col w-32">
-              <label for="brandsGender2" class="text-sm font-medium">Gender</label>
-              <select
+                >
+                  <option value="All">All</option>
+                  <option value="1990">1990s</option>
+                  <option value="2000">2000s</option>
+                  <option value="2010">2010s</option>
+                  <option value="2020">2020s</option>
+                </select>
+              </div>
+              <div class="flex flex-col w-32">
+                <label for="brandsGender2" class="text-sm font-medium">Gender</label>
+                <select
                   v-model="filters.brands.set2.gender"
                   id="brandsGender2"
                   class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500"
-              >
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+                >
+                  <option value="All">All</option>
+                  <option value="Masculine">Masculine</option>
+                  <option value="Feminine">Feminine</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <button
-              @click="fetchBrands"
-              class="mt-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none"
+          <!-- Fetch button -->
+          <div
+            class="mt-4"
+            :class="!showSecondOptions.brands
+              ? 'self-start'
+              : 'self-center'"
           >
-            Get Brands
-          </button>
+            <button
+              @click="fetchBrands"
+              class="bg-[#C96868] text-white py-2 px-4 rounded-md
+                     hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
+            >
+              Get Brands
+            </button>
+          </div>
         </div>
 
         <!-- DISPLAY IMAGES -->
         <div
-            :class="showTwoColumns('brands')
+          :class="showTwoColumns('brands')
             ? 'grid grid-cols-2 gap-6'
             : 'flex justify-center items-start'"
         >
           <!-- Set 1 -->
           <div
-              v-if="images.brands[0]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="images.brands[0]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Brands - Set 1
-            </h2>
             <div
               v-if="!showTwoColumns('brands')"
               class="flex-1 h-full"
@@ -948,13 +1056,13 @@
                     />
                   </div>
 
-                  <!-- Toggle Explanation w/ typewriter text -->
+                  <!-- Toggle Explanation -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
                     :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
-                      class="sticky top-20 z-10 w-24 h-10 bg-blue-100 text-blue-700 font-bold text-sm
+                      class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
                       @click="toggleExplanation(index)"
@@ -969,7 +1077,6 @@
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          <!-- Typed text displayed here -->
                           {{ displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
@@ -992,9 +1099,9 @@
                 >
                   <div ref="imageViewer">
                     <img
-                    :src="'data:image/png;base64,' + image.base64"
-                    alt="Decoded Image"
-                    class="w-full h-auto rounded-md shadow-md object-contain"
+                      :src="'data:image/png;base64,' + image.base64"
+                      alt="Decoded Image"
+                      class="w-full h-auto rounded-md shadow-md object-contain"
                     />
                   </div>
                 </li>
@@ -1004,24 +1111,21 @@
 
           <!-- Set 2 -->
           <div
-              v-if="showSecondOptions.brands && images.brands[1]?.length"
-              class="flex flex-col w-full mb-4"
+            v-if="showSecondOptions.brands && images.brands[1]?.length"
+            class="flex flex-col w-full mb-4"
           >
-            <h2 class="text-lg font-bold mb-2 text-center">
-              Brands - Set 2
-            </h2>
             <ul>
               <li
-                  v-for="(image, idx) in images.brands[1]"
-                  :key="'brands2-' + idx"
-                  class="border-b pb-4 mb-4"
+                v-for="(image, idx) in images.brands[1]"
+                :key="'brands2-' + idx"
+                class="border-b pb-4 mb-4"
               >
                 <div ref="imageViewer">
-                    <img
+                  <img
                     :src="'data:image/png;base64,' + image.base64"
                     alt="Decoded Image"
                     class="w-full h-auto rounded-md shadow-md object-contain"
-                    />
+                  />
                 </div>
               </li>
             </ul>
@@ -1065,31 +1169,30 @@ export default {
       expandedIndices: [],
 
       // Each section has 2 sets of filters (like your original code).
-      // set1 is always present, set2 is shown if plus sign is toggled.
       filters: {
         ratings: {
-          set1: {decade: "All", gender: "All"},
-          set2: {decade: "All", gender: "All"},
+          set1: { decade: "All", gender: "All" },
+          set2: { decade: "All", gender: "All" },
         },
         ratingsProgression: {
-          set1: {decade: "All", gender: "All"},
-          set2: {decade: "All", gender: "All"},
+          set1: { decade: "All", gender: "All" },
+          set2: { decade: "All", gender: "All" },
         },
         categoriesAndNotes: {
-          set1: {decade: "All", gender: "All"},
-          set2: {decade: "All", gender: "All"},
+          set1: { decade: "All", gender: "All" },
+          set2: { decade: "All", gender: "All" },
         },
         correlation: {
-          set1: {decade: "All", gender: "All"},
-          set2: {decade: "All", gender: "All"},
+          set1: { decade: "All", gender: "All" },
+          set2: { decade: "All", gender: "All" },
         },
         brands: {
-          set1: {decade: "All", gender: "All"},
-          set2: {decade: "All", gender: "All"},
+          set1: { decade: "All", gender: "All" },
+          set2: { decade: "All", gender: "All" },
         },
       },
 
-      // Each section now stores up to 2 arrays of images: images[section][0], images[section][1].
+      // Each section now stores up to 2 arrays of images
       images: {
         ratings: [[], []],
         ratingsProgression: [[], []],
@@ -1132,24 +1235,23 @@ export default {
         this.expandedIndices.push(index);
         // Trigger typewriter for that index
         this.typeText(
-            this.textToDisplay[index % this.textToDisplay.length],
-            index % this.textToDisplay.length
+          this.textToDisplay[index % this.textToDisplay.length],
+          index % this.textToDisplay.length
         );
       }
     },
 
-    // === TOGGLE SECOND SET OF FILTERS (PLUS SIGN) ===
+    // === TOGGLE SECOND SET OF FILTERS (COMPARE WITH) ===
     toggleSecondOptions(section) {
       this.showSecondOptions[section] = !this.showSecondOptions[section];
     },
 
     // === CHECK IF WE SHOW 2 COLUMNS OF IMAGES ===
-    // e.g., if second set is toggled AND actually has images
     showTwoColumns(section) {
       return (
-          this.showSecondOptions[section] &&
-          this.images[section][1] &&
-          this.images[section][1].length > 0
+        this.showSecondOptions[section] &&
+        this.images[section][1] &&
+        this.images[section][1].length > 0
       );
     },
 
@@ -1162,19 +1264,19 @@ export default {
       try {
         // Build an array of sets to fetch
         const relevantSets = this.showSecondOptions.ratings
-            ? [this.filters.ratings.set1, this.filters.ratings.set2]
-            : [this.filters.ratings.set1];
+          ? [this.filters.ratings.set1, this.filters.ratings.set2]
+          : [this.filters.ratings.set1];
 
         // Make parallel calls
         const responses = await Promise.all(
-            relevantSets.map((opts) =>
-                apiClient.get("/test/eda-ratings", {
-                  params: {
-                    decade: opts.decade,
-                    gender: opts.gender,
-                  },
-                })
-            )
+          relevantSets.map((opts) =>
+            apiClient.get("/test/eda-ratings", {
+              params: {
+                decade: opts.decade,
+                gender: opts.gender,
+              },
+            })
+          )
         );
 
         // Store into images.ratings[0] and [1]
@@ -1191,21 +1293,21 @@ export default {
       this.error = "";
       try {
         const relevantSets = this.showSecondOptions.ratingsProgression
-            ? [
+          ? [
               this.filters.ratingsProgression.set1,
               this.filters.ratingsProgression.set2,
             ]
-            : [this.filters.ratingsProgression.set1];
+          : [this.filters.ratingsProgression.set1];
 
         const responses = await Promise.all(
-            relevantSets.map((opts) =>
-                apiClient.get("/test/eda-ratings-prog", {
-                  params: {
-                    decade: opts.decade,
-                    gender: opts.gender,
-                  },
-                })
-            )
+          relevantSets.map((opts) =>
+            apiClient.get("/test/eda-ratings-prog", {
+              params: {
+                decade: opts.decade,
+                gender: opts.gender,
+              },
+            })
+          )
         );
 
         this.images.ratingsProgression[0] = responses[0].data.images || [];
@@ -1220,21 +1322,21 @@ export default {
       this.error = "";
       try {
         const relevantSets = this.showSecondOptions.categoriesAndNotes
-            ? [
+          ? [
               this.filters.categoriesAndNotes.set1,
               this.filters.categoriesAndNotes.set2,
             ]
-            : [this.filters.categoriesAndNotes.set1];
+          : [this.filters.categoriesAndNotes.set1];
 
         const responses = await Promise.all(
-            relevantSets.map((opts) =>
-                apiClient.get("/test/eda-cat-notes", {
-                  params: {
-                    decade: opts.decade,
-                    gender: opts.gender,
-                  },
-                })
-            )
+          relevantSets.map((opts) =>
+            apiClient.get("/test/eda-cat-notes", {
+              params: {
+                decade: opts.decade,
+                gender: opts.gender,
+              },
+            })
+          )
         );
 
         this.images.categoriesAndNotes[0] = responses[0].data.images || [];
@@ -1249,18 +1351,18 @@ export default {
       this.error = "";
       try {
         const relevantSets = this.showSecondOptions.correlation
-            ? [this.filters.correlation.set1, this.filters.correlation.set2]
-            : [this.filters.correlation.set1];
+          ? [this.filters.correlation.set1, this.filters.correlation.set2]
+          : [this.filters.correlation.set1];
 
         const responses = await Promise.all(
-            relevantSets.map((opts) =>
-                apiClient.get("/test/eda-correlation", {
-                  params: {
-                    decade: opts.decade,
-                    gender: opts.gender,
-                  },
-                })
-            )
+          relevantSets.map((opts) =>
+            apiClient.get("/test/eda-correlation", {
+              params: {
+                decade: opts.decade,
+                gender: opts.gender,
+              },
+            })
+          )
         );
 
         this.images.correlation[0] = responses[0].data.images || [];
@@ -1275,18 +1377,18 @@ export default {
       this.error = "";
       try {
         const relevantSets = this.showSecondOptions.brands
-            ? [this.filters.brands.set1, this.filters.brands.set2]
-            : [this.filters.brands.set1];
+          ? [this.filters.brands.set1, this.filters.brands.set2]
+          : [this.filters.brands.set1];
 
         const responses = await Promise.all(
-            relevantSets.map((opts) =>
-                apiClient.get("/test/eda-brands", {
-                  params: {
-                    decade: opts.decade,
-                    gender: opts.gender,
-                  },
-                })
-            )
+          relevantSets.map((opts) =>
+            apiClient.get("/test/eda-brands", {
+              params: {
+                decade: opts.decade,
+                gender: opts.gender,
+              },
+            })
+          )
         );
 
         this.images.brands[0] = responses[0].data.images || [];
@@ -1301,12 +1403,11 @@ export default {
 </script>
 
 <style scoped>
-/* Fade transition for typed explanation box (if desired) */
+/* Fade transition for typed explanation box */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
