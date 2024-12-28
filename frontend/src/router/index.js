@@ -18,12 +18,12 @@ const routes = [
   //   // which is lazy-loaded when the route is visited.
   //   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   // },
-  { path: '/', name: 'Home', component: HomePage },
-  { path: '/clusters', name: 'Clusters', component: PlaceholderPage },
-  { path: '/etl', name: 'ETL', component: PlaceholderPage },
-  { path: '/eda', name: 'EDA', component: EDAPage },
-  { path: '/classification', name: 'Classification', component: PlaceholderPage },
-  { path: '/about', name: 'About', component: PlaceholderPage },
+  { path: '/', name: 'Home', component: HomePage, meta: { title: "Perfumedia | Home" }  },
+  { path: '/clusters', name: 'Clusters', component: PlaceholderPage, meta: { title: "Perfumedia | Clusters" }  },
+  { path: '/etl', name: 'ETL', component: PlaceholderPage, meta: { title: "Perfumedia | ETL" }  },
+  { path: '/eda', name: 'EDA', component: EDAPage, meta: { title: "Perfumedia | EDA" } },
+  { path: '/classification', name: 'Classification', component: PlaceholderPage, meta: { title: "Perfumedia | Classification" }  },
+  { path: '/about', name: 'About', component: PlaceholderPage, meta: { title: "Perfumedia | About" }  },
 ]
 
 const router = createRouter({
