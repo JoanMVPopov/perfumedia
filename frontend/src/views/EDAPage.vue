@@ -26,7 +26,7 @@
     <!-- ========== MAIN CONTENT AREA ========== -->
     <div class="flex-1 p-6">
       <!-- ~~~~~ SECTION I: RATINGS (ALREADY STYLED) ~~~~~ -->
-      <section id="ratings" class="mb-12">
+      <section id="ratings" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">I. Ratings</h1>
 
         <!-- ========== FILTERS FOR RATINGS ========== -->
@@ -247,7 +247,7 @@
 
 
       <!-- ~~~~~ SECTION II: RATINGS PROGRESSION (UPDATED STYLING) ~~~~~ -->
-      <section id="ratings-progression" class="mb-12">
+      <section id="ratings-progression" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">II. Ratings progression</h1>
 
         <!-- ========== FILTERS (Progression) ========== -->
@@ -464,7 +464,7 @@
 
 
       <!-- ~~~~~ SECTION III: Categories & Notes (UPDATED STYLING) ~~~~~ -->
-      <section id="categories-and-notes" class="mb-12">
+      <section id="categories-and-notes" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">III. Categories &amp; Notes</h1>
 
         <!-- FILTERS -->
@@ -689,7 +689,7 @@
 
 
       <!-- ~~~~~ SECTION IV: Correlation (UPDATED STYLING) ~~~~~ -->
-      <section id="correlation" class="mb-12">
+      <section id="correlation" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">IV. Correlation</h1>
 
         <!-- FILTERS -->
@@ -912,7 +912,7 @@
 
 
       <!-- ~~~~~ SECTION V: Brands (UPDATED STYLING) ~~~~~ -->
-      <section id="brands" class="mb-12">
+      <section id="brands" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">V. Brands</h1>
 
         <!-- FILTERS -->
@@ -1403,6 +1403,7 @@ export default {
 </script>
 
 <style scoped>
+
 /* Fade transition for typed explanation box */
 .fade-enter-active,
 .fade-leave-active {

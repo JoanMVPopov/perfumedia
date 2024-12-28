@@ -22,6 +22,12 @@ export default {
 };
 </script>
 
+<style>
+html {
+  scroll-behavior: smooth;
+}
+</style>
+
 <!--<style lang="scss">-->
 <!--#app {-->
 <!--  font-family: Avenir, Helvetica, Arial, sans-serif;-->
