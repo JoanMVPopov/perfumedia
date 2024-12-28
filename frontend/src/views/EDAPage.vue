@@ -75,15 +75,19 @@
               <button
                 v-if="!showSecondOptions.ratings"
                 @click="toggleSecondOptions('ratings')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
-                Compare with
+                Compare with...
               </button>
 
               <button
                 v-else
                 @click="toggleSecondOptions('ratings')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
                 Remove comparison
               </button>
@@ -128,10 +132,11 @@
           : 'self-center'">
             <button
               @click="fetchRatings"
+              :disabled="loading1"
               class="bg-[#C96868] text-white py-2 px-4 rounded-md
                      hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              Get Ratings
+              {{loading1 ? "Loading..." : "Get Ratings"}}
             </button>
           </div>
         </div>
@@ -294,15 +299,19 @@
               <button
                 v-if="!showSecondOptions.ratingsProgression"
                 @click="toggleSecondOptions('ratingsProgression')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
-                Compare with
+                Compare with...
               </button>
 
               <button
                 v-else
                 @click="toggleSecondOptions('ratingsProgression')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
                 Remove comparison
               </button>
@@ -347,10 +356,11 @@
           >
             <button
               @click="fetchRatingsProgression"
+              :disabled="loading2"
               class="bg-[#C96868] text-white py-2 px-4 rounded-md
                      hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              Get Ratings progression
+              {{loading2 ? "Loading..." : "Get Ratings progression"}}
             </button>
           </div>
         </div>
@@ -515,15 +525,19 @@
               <button
                 v-if="!showSecondOptions.categoriesAndNotes"
                 @click="toggleSecondOptions('categoriesAndNotes')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
-                Compare with
+                Compare with...
               </button>
 
               <button
                 v-else
                 @click="toggleSecondOptions('categoriesAndNotes')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
                 Remove comparison
               </button>
@@ -572,10 +586,11 @@
           >
             <button
               @click="fetchCategoriesAndNotes"
+              :disabled="loading3"
               class="bg-[#C96868] text-white py-2 px-4 rounded-md
                      hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              Get Categories &amp; Notes
+              {{loading3 ? "Loading..." : "Get Categories & Notes"}}
             </button>
           </div>
         </div>
@@ -738,15 +753,19 @@
               <button
                 v-if="!showSecondOptions.correlation"
                 @click="toggleSecondOptions('correlation')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
-                Compare with
+                Compare with...
               </button>
 
               <button
                 v-else
                 @click="toggleSecondOptions('correlation')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
                 Remove comparison
               </button>
@@ -795,10 +814,11 @@
           >
             <button
               @click="fetchCorrelation"
+              :disabled="loading4"
               class="bg-[#C96868] text-white py-2 px-4 rounded-md
                      hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              Get Correlation
+              {{loading4 ? "Loading..." : "Get Correlation"}}
             </button>
           </div>
         </div>
@@ -961,15 +981,19 @@
               <button
                 v-if="!showSecondOptions.brands"
                 @click="toggleSecondOptions('brands')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
-                Compare with
+                Compare with...
               </button>
 
               <button
                 v-else
                 @click="toggleSecondOptions('brands')"
-                class="text-[#7EACB5] hover:text-[#C96868] text-xl font-bold focus:outline-none"
+                class="text-[#7EACB5] hover:text-[#FFF4EA] hover:bg-[#7EACB5]
+                border-2 py-2 px-4 rounded-md border-[#7EACB5]
+                font-bold text-sm focus:outline-none"
               >
                 Remove comparison
               </button>
@@ -1018,10 +1042,11 @@
           >
             <button
               @click="fetchBrands"
+              :disabled="loading5"
               class="bg-[#C96868] text-white py-2 px-4 rounded-md
                      hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]"
             >
-              Get Brands
+              {{loading5 ? "Loading..." : "Get Brands"}}
             </button>
           </div>
         </div>
@@ -1148,6 +1173,11 @@ export default {
   name: "FiveSectionFiltersPlusTypewriter",
   data() {
     return {
+      loading1: false,
+      loading2: false,
+      loading3: false,
+      loading4: false,
+      loading5: false,
       error: "",
       // For toggling second set of filters in each section
       showSecondOptions: {
@@ -1261,6 +1291,9 @@ export default {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     async fetchRatings() {
       this.error = "";
+
+      this.loading1 = true;
+
       try {
         // Build an array of sets to fetch
         const relevantSets = this.showSecondOptions.ratings
@@ -1283,6 +1316,8 @@ export default {
         this.images.ratings[0] = responses[0].data.images || [];
         this.images.ratings[1] = responses[1]?.data?.images || [];
         this.expandedIndices = []; // reset expansions
+
+        this.loading1 = false;
       } catch (err) {
         console.error(err);
         this.error = "Error fetching RATINGS data.";
@@ -1291,6 +1326,8 @@ export default {
 
     async fetchRatingsProgression() {
       this.error = "";
+      this.loading2 = true;
+
       try {
         const relevantSets = this.showSecondOptions.ratingsProgression
           ? [
@@ -1312,6 +1349,8 @@ export default {
 
         this.images.ratingsProgression[0] = responses[0].data.images || [];
         this.images.ratingsProgression[1] = responses[1]?.data?.images || [];
+
+        this.loading2 = false;
       } catch (err) {
         console.error(err);
         this.error = "Error fetching RATINGS PROGRESSION data.";
@@ -1320,6 +1359,8 @@ export default {
 
     async fetchCategoriesAndNotes() {
       this.error = "";
+      this.loading3 = true;
+
       try {
         const relevantSets = this.showSecondOptions.categoriesAndNotes
           ? [
@@ -1341,6 +1382,8 @@ export default {
 
         this.images.categoriesAndNotes[0] = responses[0].data.images || [];
         this.images.categoriesAndNotes[1] = responses[1]?.data?.images || [];
+
+        this.loading3 = false;
       } catch (err) {
         console.error(err);
         this.error = "Error fetching Categories & Notes data.";
@@ -1349,6 +1392,8 @@ export default {
 
     async fetchCorrelation() {
       this.error = "";
+      this.loading4 = true;
+
       try {
         const relevantSets = this.showSecondOptions.correlation
           ? [this.filters.correlation.set1, this.filters.correlation.set2]
@@ -1367,6 +1412,8 @@ export default {
 
         this.images.correlation[0] = responses[0].data.images || [];
         this.images.correlation[1] = responses[1]?.data?.images || [];
+
+        this.loading4 = false;
       } catch (err) {
         console.error(err);
         this.error = "Error fetching Correlation data.";
@@ -1375,6 +1422,8 @@ export default {
 
     async fetchBrands() {
       this.error = "";
+      this.loading5 = true;
+
       try {
         const relevantSets = this.showSecondOptions.brands
           ? [this.filters.brands.set1, this.filters.brands.set2]
@@ -1393,6 +1442,7 @@ export default {
 
         this.images.brands[0] = responses[0].data.images || [];
         this.images.brands[1] = responses[1]?.data?.images || [];
+        this.loading5 = false;
       } catch (err) {
         console.error(err);
         this.error = "Error fetching Brands data.";
