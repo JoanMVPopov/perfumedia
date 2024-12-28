@@ -141,6 +141,11 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="error1" class="mt-4 text-red-600 font-medium text-center">
+          {{ error1 }}
+        </p>
+
         <!-- ========== DISPLAY RATINGS IMAGES ========== -->
         <div
           :class="showTwoColumns('ratings')
@@ -174,25 +179,25 @@
                   <!-- Toggle Explanation w/ typewriter text -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
-                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                    :class="[expandedIndices1.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index)"
+                      @click="toggleExplanation(index, expandedIndices1, displayedText, textToDisplay)"
                     >
-                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                      {{ expandedIndices1.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
 
                     <transition name="fade">
                       <div
-                        v-if="expandedIndices.includes(index)"
+                        v-if="expandedIndices1.includes(index)"
                         class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          {{ displayedText[index % textToDisplay.length] }}
+                          {{displayedText[index % textToDisplay.length] }}
                         </p>
                       </div>
                     </transition>
@@ -365,6 +370,11 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="error2" class="mt-4 text-red-600 font-medium text-center">
+          {{ error2 }}
+        </p>
+
         <!-- DISPLAY RATINGS PROGRESSION IMAGES -->
         <div
           :class="showTwoColumns('ratingsProgression')
@@ -398,25 +408,25 @@
                   <!-- Toggle Explanation w/ typewriter text -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
-                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                    :class="[expandedIndices2.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index)"
+                      @click="toggleExplanation(index, expandedIndices2, displayedText2, textToDisplay2)"
                     >
-                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                      {{ expandedIndices2.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
 
                     <transition name="fade">
                       <div
-                        v-if="expandedIndices.includes(index)"
+                        v-if="expandedIndices2.includes(index)"
                         class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          {{ displayedText[index % textToDisplay.length] }}
+                          {{ displayedText2[index % textToDisplay2.length] }}
                         </p>
                       </div>
                     </transition>
@@ -595,6 +605,11 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="error3" class="mt-4 text-red-600 font-medium text-center">
+          {{ error3 }}
+        </p>
+
         <!-- DISPLAY IMAGES -->
         <div
           :class="showTwoColumns('categoriesAndNotes')
@@ -628,25 +643,25 @@
                   <!-- Toggle Explanation w/ typewriter text -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
-                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                    :class="[expandedIndices3.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index)"
+                      @click="toggleExplanation(index, expandedIndices3, displayedText3, textToDisplay3)"
                     >
-                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                      {{ expandedIndices3.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
 
                     <transition name="fade">
                       <div
-                        v-if="expandedIndices.includes(index)"
+                        v-if="expandedIndices3.includes(index)"
                         class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          {{ displayedText[index % textToDisplay.length] }}
+                          {{ displayedText3[index % textToDisplay3.length] }}
                         </p>
                       </div>
                     </transition>
@@ -823,6 +838,11 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="error4" class="mt-4 text-red-600 font-medium text-center">
+          {{ error4 }}
+        </p>
+
         <!-- DISPLAY IMAGES -->
         <div
           :class="showTwoColumns('correlation')
@@ -856,25 +876,25 @@
                   <!-- Toggle Explanation -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
-                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                    :class="[expandedIndices4.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index)"
+                      @click="toggleExplanation(index, expandedIndices4, displayedText4, textToDisplay4)"
                     >
-                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                      {{ expandedIndices4.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
 
                     <transition name="fade">
                       <div
-                        v-if="expandedIndices.includes(index)"
+                        v-if="expandedIndices4.includes(index)"
                         class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          {{ displayedText[index % textToDisplay.length] }}
+                          {{ displayedText4[index % textToDisplay4.length] }}
                         </p>
                       </div>
                     </transition>
@@ -1051,6 +1071,11 @@
           </div>
         </div>
 
+        <!-- Error Message -->
+        <p v-if="error5" class="mt-4 text-red-600 font-medium text-center">
+          {{ error5 }}
+        </p>
+
         <!-- DISPLAY IMAGES -->
         <div
           :class="showTwoColumns('brands')
@@ -1084,25 +1109,25 @@
                   <!-- Toggle Explanation -->
                   <div
                     class="relative pl-2 transition-all duration-1000"
-                    :class="[expandedIndices.includes(index) ? 'w-80' : 'w-24']"
+                    :class="[expandedIndices5.includes(index) ? 'w-80' : 'w-24']"
                   >
                     <div
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index)"
+                      @click="toggleExplanation(index, expandedIndices5, displayedText5, textToDisplay5)"
                     >
-                      {{ expandedIndices.includes(index) ? 'Hide Info' : 'More Info' }}
+                      {{ expandedIndices5.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
 
                     <transition name="fade">
                       <div
-                        v-if="expandedIndices.includes(index)"
+                        v-if="expandedIndices5.includes(index)"
                         class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2"
                       >
                         <h3 class="font-bold mb-2">Explanation</h3>
                         <p class="text-sm">
-                          {{ displayedText[index % textToDisplay.length] }}
+                          {{ displayedText5[index % textToDisplay5.length] }}
                         </p>
                       </div>
                     </transition>
@@ -1157,11 +1182,6 @@
           </div>
         </div>
       </section>
-
-      <!-- Error Message -->
-      <p v-if="error" class="mt-4 text-red-600 font-medium text-center">
-        {{ error }}
-      </p>
     </div>
   </div>
 </template>
@@ -1178,7 +1198,11 @@ export default {
       loading3: false,
       loading4: false,
       loading5: false,
-      error: "",
+      error1: "",
+      error2: "",
+      error3: "",
+      error4: "",
+      error5: "",
       // For toggling second set of filters in each section
       showSecondOptions: {
         ratings: false,
@@ -1189,14 +1213,39 @@ export default {
       },
       // The user’s typed text placeholders
       textToDisplay: [
-        "This is the first placeholder text",
-        "This is the second placeholder text",
-        "This is the third one",
+        "The first table provides descriptive statistics, including the count, mean, median, mode, and standard deviation for each rating. The second table gives percentile-based distribution (25th, 50th, 75th percentiles) and the minimum and maximum values.",
+        "Each box plot visualizes the median, interquartile range (IQR), and overall spread of the data, along with potential outliers (marked as dots). This plot is used to quickly assess the central tendency, variability, and any anomalies in the ratings for each rating.",
+        "The image presents a pair plot, which combines histograms and scatter plots to visualize relationships and distributions. The histograms on the diagonal show the distribution of individual ratings, while the scatter plots depict all possible pairwise relationships between the selected ratings. This type of plot is useful for identifying trends, correlations, and patterns across multiple variables.",
+        "The QQ plots in this picture are used to assess whether the data for each rating follows a normal distribution by comparing the ordered data values to theoretical quantiles from a normal distribution. If the data points closely follow the red reference line, it suggests that the data is approximately normally distributed. Deviations from the line, particularly at the tails, indicate potential skewness or outliers.",
+        "A violin plot combines a box plot and a kernel density plot to display both the distribution and central tendency of the data. The wider sections represent where data points are more concentrated, while the narrower sections indicate less frequent values. The central box plot provides additional insights into the median and interquartile range (IQR).",
       ],
       // Where typed text is displayed
-      displayedText: ["", "", ""],
+      displayedText: ["", "", "", "", ""],
+      textToDisplay2: [
+          "The image displays multiple line plots showing the yearly average values for each rating over time, with a shaded region representing the standard deviation of ±1 around each point. The line connects the yearly averages, highlighting trends or fluctuations across the years. The shaded area provides a sense of the variability in the data, with wider regions indicating higher inconsistency among reviews for that year."
+      ],
+      displayedText2: [""],
+      textToDisplay3: [
+          "The image consists of multiple pie charts representing the distribution of different fragrance categories, with each slice corresponding to a specific category's percentage contribution. The 'Others' sections in each chart includes categories contributing less than 1% individually. This visualization highlights the diversity of fragrance types and allows for an easy comparison of the relative popularity or occurrence of each category.",
+          "The bar chart displays the top 25 most frequently used fragrance notes in the dataset, ranked by the number of perfumes that include each note. The chart highlights the prevalence of certain notes compared to others, providing insight into the most popular ingredients in the dataset."
+      ],
+      displayedText3: ["", ""],
+      textToDisplay4: [
+          "The heatmap illustrates the correlation between the available categories and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how categories may influence the perceived qualities of a perfume.",
+          "The heatmap illustrates the correlation between the top 50 notes and the available categories. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the categories users classify the perfumes in.",
+          "The heatmap illustrates the correlation between the top 50 notes and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the perceived qualities of a perfume."
+      ],
+      displayedText4: ["", "", ""],
+      textToDisplay5: [
+        "The table compares brand performance across all ratings, with the highest value in each column being highlighted. Only the top 10 most frequent brands are displayed. This visualization allows for quick identification of the best-performing brands in specific categories, showcasing their strengths. "
+      ],
+      displayedText5: [""],
       // Indices for which images are expanded (for single-col scenario)
-      expandedIndices: [],
+      expandedIndices1: [],
+      expandedIndices2: [],
+      expandedIndices3: [],
+      expandedIndices4: [],
+      expandedIndices5: [],
 
       // Each section has 2 sets of filters (like your original code).
       filters: {
@@ -1234,17 +1283,17 @@ export default {
   },
   methods: {
     // === TYPEWRITER METHOD ===
-    typeText(textPremade, textIndex) {
+    typeText(dT, textPremade, textIndex) {
       let index = 0;
 
       // Reset displayed text if previously typed
-      if (this.displayedText[textIndex] !== "") {
-        this.displayedText[textIndex] = "";
+      if (dT[textIndex] !== "") {
+        dT[textIndex] = "";
       }
 
       const interval = setInterval(() => {
         if (index < textPremade.length) {
-          this.displayedText[textIndex] += textPremade[index];
+          dT[textIndex] += textPremade[index];
           index++;
         } else {
           clearInterval(interval); // Stop when text is fully typed
@@ -1253,20 +1302,21 @@ export default {
     },
 
     // === TOGGLE EXPLANATION (SINGLE-COL ONLY) ===
-    toggleExplanation(index) {
-      const i = this.expandedIndices.indexOf(index);
+    toggleExplanation(index, eI, dT, ttD) {
+      const i = eI.indexOf(index);
       if (i > -1) {
         // Already expanded => collapse
-        this.expandedIndices.splice(i, 1);
+        eI.splice(i, 1);
         // Clear typed text
-        this.displayedText[index % this.textToDisplay.length] = "";
+        dT[index % ttD.length] = "";
       } else {
         // Expand
-        this.expandedIndices.push(index);
+        eI.push(index);
         // Trigger typewriter for that index
         this.typeText(
-          this.textToDisplay[index % this.textToDisplay.length],
-          index % this.textToDisplay.length
+            dT,
+          ttD[index % ttD.length],
+          index % ttD.length
         );
       }
     },
@@ -1290,7 +1340,7 @@ export default {
     // depending on whether second set is toggled
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     async fetchRatings() {
-      this.error = "";
+      this.error1 = "";
 
       this.loading1 = true;
 
@@ -1320,12 +1370,12 @@ export default {
         this.loading1 = false;
       } catch (err) {
         console.error(err);
-        this.error = "Error fetching RATINGS data.";
+        this.error1 = "Error fetching Ratings data. Try refreshing the page";
       }
     },
 
     async fetchRatingsProgression() {
-      this.error = "";
+      this.error2 = "";
       this.loading2 = true;
 
       try {
@@ -1353,12 +1403,12 @@ export default {
         this.loading2 = false;
       } catch (err) {
         console.error(err);
-        this.error = "Error fetching RATINGS PROGRESSION data.";
+        this.error2 = "Error fetching Ratings progression data. Try refreshing the page";
       }
     },
 
     async fetchCategoriesAndNotes() {
-      this.error = "";
+      this.error3 = "";
       this.loading3 = true;
 
       try {
@@ -1386,12 +1436,12 @@ export default {
         this.loading3 = false;
       } catch (err) {
         console.error(err);
-        this.error = "Error fetching Categories & Notes data.";
+        this.error3 = "Error fetching Categories & Notes data. Try refreshing the page";
       }
     },
 
     async fetchCorrelation() {
-      this.error = "";
+      this.error4 = "";
       this.loading4 = true;
 
       try {
@@ -1416,12 +1466,12 @@ export default {
         this.loading4 = false;
       } catch (err) {
         console.error(err);
-        this.error = "Error fetching Correlation data.";
+        this.error4 = "Error fetching Correlation data. Try refreshing the page";
       }
     },
 
     async fetchBrands() {
-      this.error = "";
+      this.error5 = "";
       this.loading5 = true;
 
       try {
@@ -1445,7 +1495,7 @@ export default {
         this.loading5 = false;
       } catch (err) {
         console.error(err);
-        this.error = "Error fetching Brands data.";
+        this.error5 = "Error fetching Brands data.mTry refreshing the page";
       }
     },
   },

@@ -52,7 +52,7 @@ def get_corr_notes_rubrics(decade='All', gender='All', df=None, n=50,
 
     plt.figure(figsize=(18, 16))
     sns.heatmap(correlation_notes_rubrics, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-    plt.title(f"Correlation Between Top {n} Notes and Rubrics")
+    plt.title(f"Correlation Between Top {n} Notes and Ratings")
 
     plt.tight_layout()
     file_name = f'{decade}_{gender}_notes_rubrics_correlation.png'
@@ -132,7 +132,7 @@ def get_corr_categories_rubrics(decade='All', gender='All', df=None, n=50,
 
     plt.figure(figsize=(18, 16))
     sns.heatmap(correlation_categories_rubrics, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-    plt.title(f"Correlation Between Top {n} Notes and Categories")
+    plt.title("Correlation Between Categories and Ratings")
 
     plt.tight_layout()
     file_name = f'{decade}_{gender}_categories_rubrics_correlation.png'
