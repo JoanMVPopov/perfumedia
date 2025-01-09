@@ -594,7 +594,7 @@ def pca_explained_variance_info(X, feature_names,
     return reducer, X_reduced
 
 
-def perform_clustering_algos_permutations(do_plots, method, reducer, X_reduced, clustering_algorithms,
+def perform_clustering_algos_permutations(do_plots, curated, method, reducer, X_reduced, clustering_algorithms,
                                           results, decade, gender, method_idx,
                                           current_dir, folder_name):
 
@@ -748,7 +748,13 @@ def perform_clustering_algos_permutations(do_plots, method, reducer, X_reduced, 
         plt.tight_layout()
         # plt.show()
 
-        file_name = f'{decade}_{gender}_{method}_{method_idx}_2D_all_clustering_algos.png'
+        file_name = None
+
+        if curated:
+            file_name = f'{decade}_{gender}_{method}_curated_2D_all_clustering_algos.png'
+        else:
+            file_name = f'{decade}_{gender}_{method}_2D_all_clustering_algos.png'
+
         file_path_2D_all_clustering_algos = os.path.join(current_dir, folder_name, file_name)
         plt.savefig(file_path_2D_all_clustering_algos, bbox_inches='tight')
 
@@ -815,12 +821,9 @@ def perform_all_clustering_analysis(X,
     Performs comprehensive clustering analysis using multiple algorithms
     and dimensionality reduction techniques.
     """
-    # X, feature_names = preprocess_data(df, categories, rating_names)
-    #dim_reduction_methods = ['pca', 'tsne', 'umap', 'lle', 'mds']
 
     # pca is unreliable given that explained variance for 2d is ~55%
     # tsne is for visualization, probably should not use it
-
 
     # dim_reduction_methods = ['umap'] * 5
     # umap_temp = [10, 20, 30, 40, 50]
@@ -838,7 +841,7 @@ def perform_all_clustering_analysis(X,
                                                             tsne_perplexity=90, umap_n_neighbors=50,
                                                             umap_min_dist=0.0)
 
-        perform_clustering_algos_permutations(True, method, reducer, X_reduced, clustering_algorithms,
+        perform_clustering_algos_permutations(True, False, method, reducer, X_reduced, clustering_algorithms,
                                               results, decade, gender, method_idx,
                                               current_dir, folder_name)
 
@@ -852,13 +855,60 @@ def perform_curated_choice(X, feature_names, pca_tev,
 
     curated_pca_results = []
 
+    dim_reduction_visualization_methods = ['tsne', 'umap', 'lle', 'isomap', 'mds']
+
+    # this method does pca dr until it reached explained variance pca_tev
     pca_reducer, X_pca_reduced = pca_explained_variance_info(X, feature_names,
                                                              decade, gender, current_dir, folder_name,
                                                              pca_target_explained_var=pca_tev)
 
-    perform_clustering_algos_permutations(False, "pca", pca_reducer, X_pca_reduced, clustering_algorithms,
+    perform_clustering_algos_permutations(False, True, "pca", pca_reducer, X_pca_reduced, clustering_algorithms,
                                           curated_pca_results, decade, gender, -1,
                                           current_dir, folder_name)
+
+    algorithms_not_invalidated = [x['algorithm'] for x in curated_pca_results]
+
+    for method_idx, method in enumerate(dim_reduction_visualization_methods):
+        print(f"\nApplying {method.upper()} dimensionality reduction to visualize curated PCA clustered data...")
+
+        reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
+                                                                tsne_perplexity=90, umap_n_neighbors=15,
+                                                                umap_min_dist=0.0)
+
+        fig, axs = plt.subplots(5, 2, figsize=(30, 40))
+
+        i = 0
+
+        for algo_idx, (algo_name, algo_info) in enumerate(clustering_algorithms.items()):
+
+            if algo_name in algorithms_not_invalidated:
+                plot_clusters(
+                    X_reduced,
+                    curated_pca_results[i]['scores']['labels'],
+                    f"{method.upper()} + {algo_name}",
+                    ax=axs[algo_idx // 2][algo_idx % 2]
+                )
+                i += 1
+            else:
+                axs[algo_idx // 2][algo_idx % 2].text(0.5, 0.5,
+                                                      "Only 1 cluster found\nResults invalidated",
+                                                      horizontalalignment='center',
+                                                      verticalalignment='center',
+                                                      transform=axs[algo_idx // 2][algo_idx % 2].transAxes,
+                                                      fontsize=14,
+                                                      fontweight='bold',
+                                                      color='red')
+
+                axs[algo_idx // 2][algo_idx % 2].set_title(f"{method.upper()} + {algo_name}")
+                axs[algo_idx // 2][algo_idx % 2].set_xlabel('Component 1')
+                axs[algo_idx // 2][algo_idx % 2].set_ylabel('Component 2')
+
+        plt.tight_layout()
+
+        file_name = f'{decade}_{gender}_{method}_curated_2D_all_clustering_algos.png'
+
+        file_path_2D_all_clustering_algos = os.path.join(current_dir, folder_name, file_name)
+        plt.savefig(file_path_2D_all_clustering_algos, bbox_inches='tight')
 
     return curated_pca_results
 
@@ -914,9 +964,9 @@ def reduce_and_cluster(df, categories, rating_names,
     # Ratings are scaled using the StandardScaler
     X, feature_names = preprocess_data(df, categories, rating_names)
 
-    dimens_methods_curated = ['pca']
-    dimens_methods_curated_visualization = ['tsne', 'umap', 'lle']
-    dimens_methods_all = ['pca', 'tsne', 'umap', 'lle', 'mds']
+    # dimens_methods_curated = ['pca']
+    dimens_methods_curated_visualization = ['tsne', 'umap', 'lle', 'isomap', 'mds']
+    dimens_methods_all = ['pca', 'tsne', 'umap', 'lle', 'isomap', 'mds']
 
     #######
     ## SECTION THAT EXAMINES CURATED CHOICE
@@ -929,35 +979,26 @@ def reduce_and_cluster(df, categories, rating_names,
     # Based on pca 90% variance, perform all possible clustering techniques
     results_curated = perform_curated_choice(X, feature_names, 0.90,
                                                   decade, gender, current_dir, folder_name)
-    # Get min max scores on all 4 indices
-    results_curated = min_max_all_indices(results_curated)
 
-    sorted_res_curated = sorted(results_curated, key=lambda x: x['final_score'], reverse=True)
+    # fig, axs = plt.subplots(len(dimens_methods_curated_visualization), 1, figsize=(30, 40))
+    #
+    # for method_idx, method in enumerate(dimens_methods_curated_visualization):
+    #     print(f"\nApplying {method.upper()} dimensionality reduction...")
+    #
+    #     reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
+    #                                                         tsne_perplexity=90, umap_n_neighbors=15,
+    #                                                         umap_min_dist=0.0)
 
-    for r in sorted_res_curated:
-        print(r)
+        # plot_clusters(
+        #     X_reduced,
+        #     final_candidates_curated[0]['scores']['labels'],
+        #     f"{method.upper()}, curated PCA 90% explained variance",
+        #     ax=axs[method_idx]
+        # )
 
-    final_candidates_curated = select_final_candidates(sorted_res_curated, dimens_methods_curated)
-
-    fig, axs = plt.subplots(len(dimens_methods_curated_visualization), 1, figsize=(30, 40))
-
-    for method_idx, method in enumerate(dimens_methods_curated_visualization):
-        print(f"\nApplying {method.upper()} dimensionality reduction...")
-
-        reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-                                                            tsne_perplexity=90, umap_n_neighbors=15,
-                                                            umap_min_dist=0.0)
-
-        plot_clusters(
-            X_reduced,
-            final_candidates_curated[0]['scores']['labels'],
-            f"{method.upper()}, curated PCA 90% explained variance",
-            ax=axs[method_idx]
-        )
-
-    file_name = f'{decade}_{gender}_2D_first_curated_pca_then_reduced.png'
-    file_path_2D_first_curated_pca_then_reduced = os.path.join(current_dir, folder_name, file_name)
-    plt.savefig(file_path_2D_first_curated_pca_then_reduced, bbox_inches='tight')
+    # file_name = f'{decade}_{gender}_2D_first_curated_pca_then_reduced.png'
+    # file_path_2D_first_curated_pca_then_reduced = os.path.join(current_dir, folder_name, file_name)
+    # plt.savefig(file_path_2D_first_curated_pca_then_reduced, bbox_inches='tight')
 
     #######
     ## SECTION THAT EXAMINES ALL PERMUTATIONS IN 2D ONLY
