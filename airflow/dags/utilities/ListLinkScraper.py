@@ -6,7 +6,7 @@ import logging
 from pydantic import BaseModel
 
 from utilities.generic.Driver import ScrapeDriver
-from utilities.generic.links import links
+from utilities.generic.links import day_one, day_two, day_three
 
 
 class LinkScraper(BaseModel):
@@ -19,6 +19,17 @@ class LinkScraper(BaseModel):
 
     def scrape_links(self):
         target_links = []
+
+        links = None
+
+        times_ran = int(Variable.get("list_links_iterations", default_var=0))
+
+        if times_ran == 0:
+            links = day_one
+        elif times_ran == 1:
+            links = day_two
+        else:
+            links = day_three
 
         for link in links:
             self.driver_instance.driver.get(link)

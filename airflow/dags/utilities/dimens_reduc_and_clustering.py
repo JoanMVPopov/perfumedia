@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import umap
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from sklearn.neighbors import NearestNeighbors
 from scipy.signal import argrelextrema
 from kneed import KneeLocator
@@ -22,6 +23,10 @@ from sklearn.manifold import TSNE, LocallyLinearEmbedding, MDS, Isomap
 # ==== ADDED CODE START (DUNN & DAVIES-BOULDIN) ====
 from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import pairwise_distances
+
+from utilities.basic_analysis import get_violin_plots
+from utilities.categories_avg_piecharts import get_avg_categories_piecharts
+from utilities.notes_histograms import get_histograms_for_notes
 
 
 def multi_replace(mat, delta=None):
@@ -307,7 +312,10 @@ def get_clustering_algorithms():
         "AffinityPropagation": {
             "model": AffinityPropagation(random_state=42),
             "params": {
-                "damping": np.arange(0.5, 1, 0.05)
+                "damping": np.arange(0.5, 1, 0.05),
+                "max_iter": np.arange(100, 300, 100),
+                "convergence_iter": np.arange(15, 45, 15),
+                "preference": np.arange(-100, -9, 20)
             }
         },
         "Agglomerative": {
@@ -535,6 +543,7 @@ def pca_explained_variance_info(X, feature_names,
     file_name = f'{decade}_{gender}_{current_pca_dim}d_bar_explained_variance.png'
     file_path_bar_explained_variance = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_bar_explained_variance, bbox_inches='tight')
+    plt.close('all')
 
     # Get and show loadings (contributions of features to components)
     loadings = reducer.components_.T
@@ -590,6 +599,7 @@ def pca_explained_variance_info(X, feature_names,
         file_name = f'{decade}_{gender}_{current_pca_dim}d_component_{i}_loadings.png'
         file_path_pca_loadings = os.path.join(current_dir, folder_name, file_name)
         plt.savefig(file_path_pca_loadings, bbox_inches='tight')
+        plt.close('all')
 
     return reducer, X_reduced
 
@@ -757,6 +767,7 @@ def perform_clustering_algos_permutations(do_plots, curated, method, reducer, X_
 
         file_path_2D_all_clustering_algos = os.path.join(current_dir, folder_name, file_name)
         plt.savefig(file_path_2D_all_clustering_algos, bbox_inches='tight')
+        plt.close('all')
 
 
 def min_max_all_indices(results):
@@ -828,7 +839,8 @@ def perform_all_clustering_analysis(X,
     # dim_reduction_methods = ['umap'] * 5
     # umap_temp = [10, 20, 30, 40, 50]
 
-    dim_reduction_methods = ['umap', 'lle', 'isomap', 'mds']
+    #dim_reduction_methods = ['umap', 'lle', 'isomap', 'mds']
+    dim_reduction_methods = ['umap', 'lle', 'isomap']
 
     clustering_algorithms = get_clustering_algorithms()
 
@@ -838,7 +850,7 @@ def perform_all_clustering_analysis(X,
         print(f"\nApplying {method.upper()} dimensionality reduction...")
 
         reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-                                                            tsne_perplexity=90, umap_n_neighbors=50,
+                                                            tsne_perplexity=50, umap_n_neighbors=50,
                                                             umap_min_dist=0.0)
 
         perform_clustering_algos_permutations(True, False, method, reducer, X_reduced, clustering_algorithms,
@@ -855,9 +867,10 @@ def perform_curated_choice(X, feature_names, pca_tev,
 
     curated_pca_results = []
 
-    dim_reduction_visualization_methods = ['tsne', 'umap', 'lle', 'isomap', 'mds']
+    #dim_reduction_visualization_methods = ['tsne', 'umap', 'lle', 'isomap', 'mds']
+    dim_reduction_visualization_methods = ['tsne', 'umap', 'lle', 'isomap']
 
-    # this method does pca dr until it reached explained variance pca_tev
+    # this method does pca dr until it reaches explained variance pca_tev (e.g. 90% or 0.90)
     pca_reducer, X_pca_reduced = pca_explained_variance_info(X, feature_names,
                                                              decade, gender, current_dir, folder_name,
                                                              pca_target_explained_var=pca_tev)
@@ -872,7 +885,7 @@ def perform_curated_choice(X, feature_names, pca_tev,
         print(f"\nApplying {method.upper()} dimensionality reduction to visualize curated PCA clustered data...")
 
         reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-                                                                tsne_perplexity=90, umap_n_neighbors=15,
+                                                                tsne_perplexity=50, umap_n_neighbors=15,
                                                                 umap_min_dist=0.0)
 
         fig, axs = plt.subplots(5, 2, figsize=(30, 40))
@@ -909,6 +922,7 @@ def perform_curated_choice(X, feature_names, pca_tev,
 
         file_path_2D_all_clustering_algos = os.path.join(current_dir, folder_name, file_name)
         plt.savefig(file_path_2D_all_clustering_algos, bbox_inches='tight')
+        plt.close(fig)
 
     return curated_pca_results
 
@@ -965,8 +979,9 @@ def reduce_and_cluster(df, categories, rating_names,
     X, feature_names = preprocess_data(df, categories, rating_names)
 
     # dimens_methods_curated = ['pca']
-    dimens_methods_curated_visualization = ['tsne', 'umap', 'lle', 'isomap', 'mds']
-    dimens_methods_all = ['pca', 'tsne', 'umap', 'lle', 'isomap', 'mds']
+    # dimens_methods_curated_visualization = ['tsne', 'umap', 'lle', 'isomap', 'mds']
+    # dimens_methods_all = ['pca', 'tsne', 'umap', 'lle', 'isomap', 'mds']
+    dimens_methods_all = ['pca', 'tsne', 'umap', 'lle', 'isomap']
 
     #######
     ## SECTION THAT EXAMINES CURATED CHOICE
@@ -974,44 +989,140 @@ def reduce_and_cluster(df, categories, rating_names,
 
     # a) Use PCA to get 90% variance (pca_tev), cluster based on those dimensions
     # b) Label that data to original dimensions
-    # c) Do all dimens red (mainly UMAP, TSNE, LLE) to 2D and visualize with said labels
+    # c) Do all dimens red (UMAP, TSNE, LLE, ISOMAP) to 2D and visualize with said labels
 
     # Based on pca 90% variance, perform all possible clustering techniques
     results_curated = perform_curated_choice(X, feature_names, 0.90,
                                                   decade, gender, current_dir, folder_name)
 
-    # fig, axs = plt.subplots(len(dimens_methods_curated_visualization), 1, figsize=(30, 40))
-    #
-    # for method_idx, method in enumerate(dimens_methods_curated_visualization):
-    #     print(f"\nApplying {method.upper()} dimensionality reduction...")
-    #
-    #     reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-    #                                                         tsne_perplexity=90, umap_n_neighbors=15,
-    #                                                         umap_min_dist=0.0)
+    """  
+    "algorithm": algo_name,
+    "params": params,
+    "scores": { silhouette': sil_score,
+        'calinski_harabasz': ch_score,
+        'davies_bouldin': db_score,
+        'dunn_index': dunn_score,
+        'labels': labels,
+        'n_clusters': len(unique_labels) - (1 if -1 in labels else 0),
+        'n_noise': n_noise
+    },
+    "reduction_method": method                
+    """
 
-        # plot_clusters(
-        #     X_reduced,
-        #     final_candidates_curated[0]['scores']['labels'],
-        #     f"{method.upper()}, curated PCA 90% explained variance",
-        #     ax=axs[method_idx]
-        # )
+    pg_hook = PostgresHook(postgres_conn_id='dag_connection')
+    connection = pg_hook.get_conn()
+    cursor = connection.cursor()
 
-    # file_name = f'{decade}_{gender}_2D_first_curated_pca_then_reduced.png'
-    # file_path_2D_first_curated_pca_then_reduced = os.path.join(current_dir, folder_name, file_name)
-    # plt.savefig(file_path_2D_first_curated_pca_then_reduced, bbox_inches='tight')
+    try:
+        for curated_result in results_curated:
+            current_labels = curated_result['scores']['labels']
+            curated_result_algo = curated_result['algorithm']
+            curated_result_dr = curated_result['reduction_method']
+
+            # exclude -1 since that is noise
+            # so we get a list like [0, 1]
+            unique_labels = np.unique(current_labels[current_labels != -1])
+
+            for label in unique_labels:
+                # get DataFrame with data linked to corresponding cluster (given by label)
+                corresponding_cluster_data = df.iloc[np.where(current_labels == label)]
+
+                get_violin_plots(decade=decade, gender=gender, df=corresponding_cluster_data[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']],
+                         current_dir=current_dir,
+                         folder_name=folder_name,
+                         filename_custom=f'{decade}_{gender}_violin_plots_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png')
+
+                get_avg_categories_piecharts(decade=decade, gender=gender, df=corresponding_cluster_data, threshold=1,
+                                     categories=categories,
+                                     current_dir=current_dir,
+                                     folder_name=folder_name,
+                                     filename_custom=f'{decade}_{gender}_avg_categories_piecharts_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png')
+
+                get_histograms_for_notes(decade=decade, gender=gender, df=corresponding_cluster_data, top_n=25,
+                                 current_dir=current_dir,
+                                 folder_name=folder_name,
+                                 filename_custom=f'{decade}_{gender}_notes_histogram_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png')
+
+                insert_query = """
+                                INSERT INTO etl_clusters (link, decade, gender, curated, cluster, reduction, clusterization)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                                            """
+
+                perfumes_to_add = [(x, decade, gender, True, int(label), curated_result_dr, curated_result_algo) for x in corresponding_cluster_data['link']]
+
+                # add links with clusterization settings to database
+                cursor.executemany(insert_query, perfumes_to_add)
+                connection.commit()
+    except Exception as e:
+        print(f"Exception occurred while getting stats for curated pca results: {e}")
+        connection.rollback()
+    finally:
+        cursor.close()
+        connection.close()
 
     #######
     ## SECTION THAT EXAMINES ALL PERMUTATIONS IN 2D ONLY
     #######
 
+    connection = pg_hook.get_conn()
+    cursor = connection.cursor()
+
     # Perform all possible clustering techniques, on all possbile dimens reduction techniques
     results_all = perform_all_clustering_analysis(X, decade, gender,
                                                   current_dir, folder_name)
 
-    results_all = min_max_all_indices(results_all)
+    # results_all = min_max_all_indices(results_all)
+    #
+    # sorted_res_all = sorted(results_all, key=lambda x: x['final_score'], reverse=True)
+    #
+    # final_candidates_all = select_final_candidates(sorted_res_all, dimens_methods_all)
 
-    sorted_res_all = sorted(results_all, key=lambda x: x['final_score'], reverse=True)
+    final_candidates_only_umap = [x for x in results_all if x['reduction_method'] == "umap"]
 
-    final_candidates_all = select_final_candidates(sorted_res_all, dimens_methods_all)
+    try:
+        for result in final_candidates_only_umap:
+            current_labels = result['scores']['labels']
+            current_result_algo = result['algorithm']
+            current_result_dr = result['reduction_method']
 
+            # exclude -1 since that is noise
+            # so we get a list like [0, 1]
+            unique_labels = np.unique(current_labels[current_labels != -1])
+
+            for label in unique_labels:
+                # get DataFrame with data linked to corresponding cluster (given by label)
+                corresponding_cluster_data = df.iloc[np.where(current_labels == label)]
+
+                get_violin_plots(decade=decade, gender=gender, df=corresponding_cluster_data[['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']],
+                         current_dir=current_dir,
+                         folder_name=folder_name,
+                         filename_custom=f'{decade}_{gender}_violin_plots_cluster{label}_{current_result_dr}_{current_result_algo}.png')
+
+                get_avg_categories_piecharts(decade=decade, gender=gender, df=corresponding_cluster_data, threshold=1,
+                                     categories=categories,
+                                     current_dir=current_dir,
+                                     folder_name=folder_name,
+                                     filename_custom=f'{decade}_{gender}_avg_categories_piecharts_cluster{label}_{current_result_dr}_{current_result_algo}.png')
+
+                get_histograms_for_notes(decade=decade, gender=gender, df=corresponding_cluster_data, top_n=25,
+                                 current_dir=current_dir,
+                                 folder_name=folder_name,
+                                 filename_custom=f'{decade}_{gender}_notes_histogram_cluster{label}_{current_result_dr}_{current_result_algo}.png')
+
+                insert_query = """
+                                INSERT INTO etl_clusters (link, decade, gender, curated, cluster, reduction, clusterization)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                                            """
+
+                perfumes_to_add = [(x, decade, gender, False, int(label), current_result_dr, current_result_algo) for x in corresponding_cluster_data['link']]
+
+                # add links with clusterization settings to database
+                cursor.executemany(insert_query, perfumes_to_add)
+                connection.commit()
+    except Exception as e:
+        print(f"Exception occurred while getting stats for all algos (umap + others) results: {e}")
+        connection.rollback()
+    finally:
+        cursor.close()
+        connection.close()
 

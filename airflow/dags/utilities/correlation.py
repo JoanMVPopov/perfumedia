@@ -11,12 +11,13 @@ def calculate_correlation_and_graphs(decade='All', gender='All', df=None, top_n=
                                      current_dir=os.path.dirname(os.path.abspath(__file__)),
                                      folder_name='temp'):
     # flatten the notes column into binary columns
-    df['notes'] = df['notes'].apply(lambda x: ast.literal_eval(x))
-    notes_dummies = df['notes'].explode().str.get_dummies().groupby(level=0).max()
+    # df['notes'] = df['notes'].apply(lambda x: ast.literal_eval(x))
+    notes = df['notes'].apply(lambda x: ast.literal_eval(x))
+    notes_dummies = notes.explode().str.get_dummies().groupby(level=0).max()
 
     # get the top n most frequent notes
     n = top_n
-    note_counts = df['notes'].explode().value_counts()
+    note_counts = notes.explode().value_counts()
     top_notes = note_counts.head(n).index
 
     # filter the notes dummies to include only the top n notes

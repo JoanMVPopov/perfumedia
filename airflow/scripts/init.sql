@@ -7,6 +7,18 @@ CREATE TABLE IF NOT EXISTS etl_backlog (
     attempts INTEGER DEFAULT 0
 );
 
+-- Table for Clusters (info about clusters) model
+CREATE TABLE IF NOT EXISTS etl_clusters (
+    id SERIAL PRIMARY KEY,
+    link TEXT NOT NULL,
+    decade INTEGER,
+    gender TEXT,
+    curated BOOLEAN,
+    cluster INTEGER,
+    reduction TEXT,
+    clusterization TEXT,
+);
+
 -- Table for Perfume model
 CREATE TABLE IF NOT EXISTS etl_perfume (
     id SERIAL PRIMARY KEY,
@@ -15,6 +27,8 @@ CREATE TABLE IF NOT EXISTS etl_perfume (
     brand VARCHAR(255) NOT NULL,
     rel_year INTEGER NOT NULL,
     rel_decade INTEGER NOT NULL,
+    description TEXT DEFAULT 'No description',
+    image TEXT DEFAULT 'No image',
     notes TEXT[] DEFAULT '{}',
     type TEXT[] DEFAULT '{}',
     type_numbers INTEGER[] DEFAULT '{}',

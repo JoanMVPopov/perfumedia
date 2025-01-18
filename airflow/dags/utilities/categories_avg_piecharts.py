@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 def get_avg_categories_piecharts(decade='All', gender='All', df=None, threshold=1,
                                  categories=None,
                                  current_dir=os.path.dirname(os.path.abspath(__file__)),
-                                 folder_name='temp'):
+                                 folder_name='temp',
+                                 filename_custom=None):
 
     fig, axs = plt.subplots(4, 1, figsize=(12, 36))
 
@@ -25,9 +26,10 @@ def get_avg_categories_piecharts(decade='All', gender='All', df=None, threshold=
                      ha='center', fontsize=10, color='gray')
 
     plt.tight_layout()
-    file_name = f'{decade}_{gender}_avg_categories_piecharts.png'
+    file_name = f'{decade}_{gender}_avg_categories_piecharts.png' if filename_custom is None else filename_custom
     file_path_categories_piecharts = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_categories_piecharts, bbox_inches='tight')
+    plt.close(fig)
 
 
 def get_category_avg_pie_chart(df, category='type', threshold=1):

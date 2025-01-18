@@ -23,6 +23,15 @@ class Backlog(models.Model):
     link = models.TextField()
     attempts = models.IntegerField(default=0)
 
+class Clusters(models.Model):
+    link = models.TextField()
+    decade = models.TextField(default="All")
+    gender = models.TextField()
+    curated = models.BooleanField()
+    cluster = models.IntegerField()
+    reduction = models.TextField()
+    clusterization = models.TextField()
+
 
 class Perfume(models.Model):
     link = models.TextField()
@@ -30,6 +39,8 @@ class Perfume(models.Model):
     brand = models.CharField(max_length=255)
     rel_year = models.IntegerField()
     rel_decade = models.IntegerField()
+    description = models.TextField(default="No description")
+    image = models.TextField(default="No image")
     notes = ArrayField(
         models.CharField(max_length=50),
         blank=True,

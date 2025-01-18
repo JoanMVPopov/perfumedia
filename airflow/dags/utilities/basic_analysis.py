@@ -30,7 +30,8 @@ def calculate_basic_stats_and_diagrams(decade='All', gender='All', df=None,
 
 def get_basic_table_stats(decade='All', gender='All', df=None,
                           current_dir=os.path.dirname(os.path.abspath(__file__)),
-                          folder_name='temp'):
+                          folder_name='temp',
+                          filename_custom=None):
 
     summary = df.describe()
     median = df.median()
@@ -71,10 +72,11 @@ def get_basic_table_stats(decade='All', gender='All', df=None,
 
     plt.tight_layout()
 
-    file_name = f'{decade}_{gender}.png'
+    file_name = f'{decade}_{gender}.png' if filename_custom is None else filename_custom
     file_path_save_table = os.path.join(current_dir, folder_name, file_name)
 
     plt.savefig(file_path_save_table, bbox_inches='tight')
+    plt.close(fig)
 
 
 def get_boxplots(decade='All', gender='All', df=None,
@@ -88,6 +90,7 @@ def get_boxplots(decade='All', gender='All', df=None,
     file_name = f'{decade}_{gender}_box_plots.png'
     file_path_box_plots = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_box_plots, bbox_inches='tight')
+    plt.close('all')
 
 
 def get_qq_plots(decade='All', gender='All', df=None,
@@ -105,6 +108,7 @@ def get_qq_plots(decade='All', gender='All', df=None,
     file_name = f'{decade}_{gender}_qq_plots.png'
     file_path_qq_plots = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_qq_plots, bbox_inches='tight')
+    plt.close(fig)
 
 
 def get_pairplot(decade='All', gender='All', df=None,
@@ -131,16 +135,19 @@ def get_pairplot(decade='All', gender='All', df=None,
     file_name = f'{decade}_{gender}_pairplots.png'
     file_path_pairplots = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_pairplots, bbox_inches='tight')
+    plt.close('all')
 
 
 def get_violin_plots(decade='All', gender='All', df=None,
                      current_dir=os.path.dirname(os.path.abspath(__file__)),
-                     folder_name='temp'):
+                     folder_name='temp',
+                     filename_custom=None):
 
     plt.figure(figsize=(8, 6))
     sns.violinplot(data=df)
     plt.title("Violin Plots of Ratings")
 
-    file_name = f'{decade}_{gender}_violin_plots.png'
+    file_name = f'{decade}_{gender}_violin_plots.png' if filename_custom is None else filename_custom
     file_path_violin_plots = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_violin_plots, bbox_inches='tight')
+    plt.close('all')

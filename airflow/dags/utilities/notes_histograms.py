@@ -6,7 +6,8 @@ from matplotlib.ticker import MaxNLocator
 
 def get_histograms_for_notes(decade='All', gender='All', df=None, top_n=25,
                              current_dir=os.path.dirname(os.path.abspath(__file__)),
-                             folder_name='temp'):
+                             folder_name='temp',
+                             filename_custom=None):
 
     notes = df['notes'].apply(lambda x: ast.literal_eval(x))
 
@@ -47,6 +48,7 @@ def get_histograms_for_notes(decade='All', gender='All', df=None, top_n=25,
     # rotate ticks to reduce text overlap
     plt.xticks(rotation=45, ha="right", fontsize=8)
 
-    file_name = f'{decade}_{gender}_notes_histogram.png'
+    file_name = f'{decade}_{gender}_notes_histogram.png' if filename_custom is None else filename_custom
     file_path_notes_histogram = os.path.join(current_dir, folder_name, file_name)
     plt.savefig(file_path_notes_histogram, bbox_inches='tight')
+    plt.close('all')

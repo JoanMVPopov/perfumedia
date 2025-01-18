@@ -150,6 +150,8 @@ class Scraper(BaseModel):
         data_dic['Brand'] = a_brand_name
         data_dic['Year'] = a_brand_year
         data_dic['Decade'] = brand_decade
+        data_dic['Description'] = soup.find('meta', property='og:description')['content']
+        data_dic['Image'] = soup.find('meta', property='og:image')['content']
 
         return data_dic
 
@@ -164,7 +166,7 @@ class Scraper(BaseModel):
                         FROM etl_backlog
                         WHERE attempts < 3
                         ORDER BY id
-                        LIMIT 5
+                        LIMIT 40
                         FOR UPDATE SKIP LOCKED;
                     """
             cursor.execute(select_query)
@@ -198,7 +200,9 @@ class Scraper(BaseModel):
                     self.extract_chart_items(soup, data_dictionary)
                     self.extract_rating_items(soup, data_dictionary)
                     total_record_list.append((link, data_dictionary['Name'], data_dictionary['Brand'],
-                                              data_dictionary['Year'], data_dictionary['Decade'], data_dictionary['Notes'],
+                                              data_dictionary['Year'], data_dictionary['Decade'],
+                                              data_dictionary['Description'], data_dictionary['Image'],
+                                              data_dictionary['Notes'],
                                               data_dictionary['Type'], data_dictionary['Type Numbers'],
                                               data_dictionary['Style'], data_dictionary['Style Numbers'],
                                               data_dictionary['Season'], data_dictionary['Season Numbers'],
@@ -211,10 +215,10 @@ class Scraper(BaseModel):
 
             # After loop, insert newly acquired data into the etl_perfume table (contains all info)
             insert_query = """
-                            INSERT INTO etl_perfume (link, name, brand, rel_year, rel_decade, notes, 
+                            INSERT INTO etl_perfume (link, name, brand, rel_year, rel_decade, description, image, notes, 
                             type, type_numbers, style, style_numbers, season, season_numbers, occasion, occasion_numbers,  
                             scent, longevity, sillage, bottle, value_for_money)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                             """
 
             cursor.executemany(insert_query, total_record_list)
