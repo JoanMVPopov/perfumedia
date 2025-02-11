@@ -1,7 +1,9 @@
+import ast
 import base64
 import json
 import os
 
+import pandas as pd
 from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import status
@@ -9,7 +11,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Product
+from .models import Product, Perfume
 from .serializer import ProductSerializer
 
 # def index(request):
@@ -341,3 +343,103 @@ class EDADataBrands(APIView):
                 })
 
         return Response({"images": images_base64}, status=status.HTTP_200_OK)
+
+class PFNotes(APIView):
+    def get(self, request):
+        try:
+            queryset = Perfume.objects.all().values()
+            df = pd.DataFrame.from_records(queryset)
+            # Convert the 'notes' column (if stored as a string representation of a list)
+            #df['notes'] = df['notes'].apply(lambda x: ast.literal_eval(x))
+            # To get a set of all unique notes:
+            # Explode the 'notes' column (flatten lists)
+            exploded_notes = df['notes'].explode()
+
+            # Drop any NaNs introduced by explode
+            exploded_notes = exploded_notes.dropna()
+
+            # Now get unique notes from the cleaned series
+            unique_notes = exploded_notes.unique().tolist()
+
+            #print(unique_notes)
+
+            return Response({'notes': unique_notes}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'error':"Could not retrieve notes"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class PFPieItems(APIView):
+    def get(self, request):
+        try:
+            queryset = Perfume.objects.all().values()
+            df = pd.DataFrame.from_records(queryset)
+
+            categories = ['type', 'style', 'season', 'occasion']
+
+            exploded_categories = []
+
+            for outer_index, category in enumerate(categories):
+                unique_subcategories = []
+
+                for index, category_row in enumerate(df[category]):
+                    for index_cat, category_curr_name in enumerate(category_row):
+                       if category_curr_name not in unique_subcategories:
+                           unique_subcategories.append(category_curr_name)
+
+                exploded_categories.append(unique_subcategories)
+
+            return Response({'piechart_items': exploded_categories}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'error': "Could not retrieve piechart items"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PFDefaultSimilarity(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+class PFModelSimilarity(APIView):
+    def get(self, request):
+        # # Parse the JSON body
+        # body_data = json.loads(request.body)
+        #
+        # # Extract parameters
+        # decade = body_data.get('decade')
+        # gender = body_data.get('gender')
+
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        if not decade or not gender:
+            return Response(
+                {"error": "Both 'decade' and 'gender' parameters are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+
+        # Ensure the folder exists
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Folder not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+

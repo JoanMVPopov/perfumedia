@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue';
 import PlaceholderPage from '../views/PlaceholderPage.vue';
 import EDAPage from "@/views/EDAPage.vue";
+import PerfumeFinderPage from "@/views/PerfumeFinderPage.vue";
+import ClustersPage from "@/views/ClustersPage.vue";
 
 const routes = [
   // {
@@ -19,10 +21,10 @@ const routes = [
   //   component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   // },
   { path: '/', name: 'Home', component: HomePage, meta: { title: "Perfumedia | Home" }  },
-  { path: '/clusters', name: 'Clusters', component: PlaceholderPage, meta: { title: "Perfumedia | Clusters" }  },
+  { path: '/clusters', name: 'Clusters', component: ClustersPage, meta: { title: "Perfumedia | Clusters" }  },
   { path: '/etl', name: 'ETL', component: PlaceholderPage, meta: { title: "Perfumedia | ETL" }  },
   { path: '/eda', name: 'EDA', component: EDAPage, meta: { title: "Perfumedia | EDA" } },
-  { path: '/classification', name: 'Classification', component: PlaceholderPage, meta: { title: "Perfumedia | Classification" }  },
+  { path: '/finder', name: 'Perfume Finder', component: PerfumeFinderPage, meta: { title: "Perfumedia | Finder" }  },
   { path: '/about', name: 'About', component: PlaceholderPage, meta: { title: "Perfumedia | About" }  },
 ]
 

@@ -16,18 +16,14 @@ RUN pip install --upgrade pip
 
 COPY ./requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install -r requirements.txt -vvv
 
 
 ## USE FOR PRODUCTION WHEN READY, OTHERWISE VOLUMES ARE UTILIZED
 ### Copy the entire backend directory into /app/backend
 #COPY . ./backend
 
-
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
-
-# Print the Python system paths being searched for modules
-#RUN python -c "import sys; print('\n'.join(sys.path))" && echo "\n"
 
 # Inform Docker that the container listens on the specified network port at runtime
 EXPOSE ${PORT}

@@ -14,5 +14,7 @@ urlpatterns = [
     path("eda-ratings-prog/", views.EDADataRatingsProgression.as_view()),
     path("eda-cat-notes/", views.EDADataCategoriesNotes.as_view()),
     path("eda-correlation/", views.EDADataCorrelation.as_view()),
-    path("eda-brands/", views.EDADataBrands.as_view())
+    path("eda-brands/", views.EDADataBrands.as_view()),
+    path("pf-perfume-notes/", views.PFNotes.as_view()),
+    path("pf-pie-items/", views.PFPieItems.as_view()),
 ]
