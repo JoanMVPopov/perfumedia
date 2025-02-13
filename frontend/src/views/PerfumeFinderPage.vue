@@ -1,3 +1,14 @@
+<script setup>
+import 'vue3-carousel/carousel.css'
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel'
+
+const carouselConfig = {
+  itemsToShow: 1.0,
+  wrapAround: false,
+  breakpointMode: 'carousel'
+}
+</script>
+
 <template>
   <div class="min-h-screen bg-[#FFF4EA] flex">
     <!-- ========== LEFT STICKY TABLE OF CONTENTS ========== -->
@@ -15,7 +26,7 @@
     </aside>
 
     <!-- ========== MAIN CONTENT AREA ========== -->
-    <div class="flex-1 p-6">
+    <div class="flex-1 p-6 w-5/6">
       <!-- ~~~~~ SECTION I: BUILD YOUR OWN ~~~~~ -->
       <section id="build-your-own" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">I. Build Your Own Perfume</h1>
@@ -64,82 +75,91 @@
 
         <!-- ===== SUBSECTION 1.2: Pie Charts ===== -->
         <!-- Updated Pie Charts section -->
-      <div class="mb-8">
-        <h2 class="text-xl font-semibold mb-4">Customize Pie Charts</h2>
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">Customize Pie Charts</h2>
 
-        <div
-          v-for="(pie, pieIndex) in pieCharts"
-          :key="pieIndex"
-          class="mb-8 border p-4 rounded"
-        >
-          <h3 class="text-lg font-bold mb-2">
-            Pie Chart for {{categories[pieIndex]}}
-          </h3>
+          <Carousel v-bind="carouselConfig" @init="onCarouselInit" @slide-end="onSlideEnd">
+              <Slide v-for="(pie, pieIndex) in pieCharts"
+                :key="pieIndex">
 
-          <!-- Total percentage warning -->
-          <div
-            :class="getTotalPercentage(pieIndex) !== 100
-            ? 'text-[#C96868] mb-2'
-            : 'text-[#7EACB5] mb-2'"
-          >
-            Total must equal 100% (Current: {{getTotalPercentage(pieIndex)}}%)
-          </div>
+                <div class="flex-row mb-12">
+                  <h3 class="text-lg font-bold mb-2">
+                  Pie Chart for {{categories[pieIndex]}}
+                  </h3>
 
-          <!-- Pie Chart segments -->
-          <div
-            v-for="(segment, segIndex) in pie.segments"
-            :key="segIndex"
-            class="flex items-center space-x-4 mb-4"
-          >
-            <!-- Dropdown for selecting an item -->
-            <v-select
-              :options="formattedPieItems(pieIndex)"
-              v-model="segment.selectedItem"
-              placeholder="Select item"
-              label="name"
-              class="w-48"
-              @input="updateChart(pieIndex)"
-            ></v-select>
+                  <!-- Total percentage warning -->
+                  <div
+                    :class="getTotalPercentage(pieIndex) !== 100
+                    ? 'text-[#C96868] mb-2'
+                    : 'text-[#7EACB5] mb-2'"
+                  >
+                    Total must equal 100% (Current: {{getTotalPercentage(pieIndex)}}%)
+                  </div>
 
-            <!-- Slider for segment percentage -->
-            <div class="flex-1 flex items-center space-x-2">
-              <input
-                type="range"
-                v-model.number="segment.percentage"
-                min="0"
-                max="100"
-                class="w-full"
-                @input="handleSliderInput(pieIndex, segIndex)"
-                @change="finalizeSliderChange(pieIndex)"
-              />
-              <span class="w-12 text-right">{{segment.percentage}}%</span>
-            </div>
+                  <!-- Pie Chart segments -->
+                  <div
+                    v-for="(segment, segIndex) in pie.segments"
+                    :key="segIndex"
+                    class="flex items-center space-x-4 mb-4"
+                  >
+                    <!-- Dropdown for selecting an item -->
+                    <v-select
+                      :options="formattedPieItems(pieIndex)"
+                      v-model="segment.selectedItem"
+                      placeholder="Select item"
+                      label="name"
+                      class="w-48"
+                      @option:selected="updateChart(pieIndex)"
+                    ></v-select>
 
-            <!-- Button to remove the segment -->
-            <button
-              @click="removeSegment(pieIndex, segIndex)"
-              class="bg-red-500 text-white px-2 py-1 rounded"
-              :disabled="pie.segments.length <= 1"
-            >
-              Remove
-            </button>
-          </div>
+                    <!-- Slider for segment percentage -->
+                    <div class="flex-1 flex items-center space-x-2">
+                      <input
+                        type="range"
+                        v-model.number="segment.percentage"
+                        min="0"
+                        max="100"
+                        class="w-full"
+                        @input="handleSliderInput(pieIndex, segIndex)"
+                        @change="finalizeSliderChange(pieIndex)"
+                      />
+                      <span class="w-12 text-right">{{segment.percentage}}%</span>
+                    </div>
 
-          <!-- Button to add a new segment -->
-          <button
-            @click="addSegment(pieIndex)"
-            class="bg-green-500 text-white px-3 py-1 rounded mb-4"
-            :disabled="getTotalPercentage(pieIndex) >= 100"
-          >
-            Add Segment
-          </button>
+                    <!-- Button to remove the segment -->
+                    <button
+                      @click="removeSegment(pieIndex, segIndex)"
+                      class="bg-red-500 text-white px-2 py-1 rounded"
+                      :disabled="pie.segments.length <= 1"
+                    >
+                      Remove
+                    </button>
+                  </div>
 
-          <!-- Canvas for Chart.js pie chart -->
-          <div class="w-full" style="height:300px;">
-            <canvas :id="'pieChart' + pieIndex"></canvas>
-          </div>
+                  <!-- Button to add a new segment -->
+                  <button
+                    @click="addSegment(pieIndex)"
+                    class="bg-green-500 text-white px-3 py-1 rounded mb-4"
+                    :disabled="getTotalPercentage(pieIndex) >= 100"
+                  >
+                    Add Segment
+                  </button>
+
+                  <!-- Canvas for Chart.js pie chart -->
+                  <div class="w-full" style="height:300px;">
+                    <canvas :id="'pieChart' + pieIndex" :ref="el => chartCanvasRefs[pieIndex] = el"></canvas>
+                  </div>
+                </div>
+              </Slide>
+
+            <template #addons>
+              <Navigation />
+              <Pagination />
+            </template>
+
+          </Carousel>
+
         </div>
-      </div>
       </section>
 
       <!-- ~~~~~ SECTION II: PLACEHOLDER FOR FUTURE CONTENT ~~~~~ -->
@@ -168,6 +188,11 @@ import {
 } from "chart.js";
 Chart.register(PieController, ArcElement, Tooltip, Legend);
 
+// TODO:
+// Should not be able to add more segments than total unique segments for pie chart
+// Should not be able to submit a segment
+// Dropdown is kinda funky
+
 export default {
   name: "BuildYourOwnPage",
   components: {
@@ -175,6 +200,7 @@ export default {
   },
   data() {
     return {
+      chartCanvasRefs: [],
       // Data for perfume notes (Subsection 1.1)
       sliderTimeout: null,
       perfumeNotes: [],
@@ -221,6 +247,19 @@ export default {
     }
   },
   methods: {
+    onCarouselInit() {
+    // When the carousel is initialized, update all charts
+    this.pieCharts.forEach((_, index) => {
+      this.$nextTick(() => {
+        this.updateChart(index);
+      });
+    });
+  },
+  onSlideEnd({ currentSlideIndex }) {
+  setTimeout(() => {
+    this.updateChart(currentSlideIndex);
+  }, 100);
+},
     formattedPieItems(index) {
     // Ensure the array exists before trying to filter it.
     const items = this.pieItems[index] || [];
@@ -357,39 +396,44 @@ export default {
     },
     // Update (or create) the pie chart for a given pie index
     updateChart(pieIndex) {
-      const segments = this.pieCharts[pieIndex].segments;
-      const labels = segments.map((seg) =>
-        seg.selectedItem ? seg.selectedItem.name : "Segment"
-      );
-      const data = segments.map((seg) => seg.percentage);
+      setTimeout(() => {
+        const canvasElement = this.chartCanvasRefs[pieIndex];
+        if (!canvasElement) {
+          console.warn(`Canvas for slide ${pieIndex} not found.`);
+          return;
+        }
+        const ctx = canvasElement.getContext("2d");
 
-      // If a previous Chart.js instance exists, destroy it
-      if (this.chartInstances[pieIndex]) {
-        this.chartInstances[pieIndex].destroy();
-      }
-      // Get the canvas element by its id
-      const canvasElement = document.getElementById("pieChart" + pieIndex);
-      if (!canvasElement) return;
-      const ctx = canvasElement.getContext("2d");
+        if (this.chartInstances[pieIndex]) {
+          this.chartInstances[pieIndex].destroy();
+        }
 
-      // Create a new Chart.js pie chart instance
-      this.chartInstances[pieIndex] = new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              data: data,
+        const segments = this.pieCharts[pieIndex].segments;
+        const labels = segments.map(seg => (seg.selectedItem ? seg.selectedItem.name : "Segment"));
+        const data = segments.map(seg => seg.percentage);
+
+        this.chartInstances[pieIndex] = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels,
+            datasets: [{
+              data,
               backgroundColor: segments.map((_, idx) => this.getColor(idx)),
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false, // disable animations
+            plugins: {
+              tooltip: {
+                enabled: true, // disable tooltips if not needed
+              },
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-        },
-      });
-    },
+          },
+        });
+      }, 50); // Adjust delay as needed
+    }
   },
 };
 </script>

@@ -17,6 +17,7 @@
     "vue-carousel": "^0.18.0",
     "vue-router": "^4.0.3",
     "vue-select": "^4.0.0-beta.6",
+    "vue3-carousel": "^0.14.0",
     "vuex": "^4.0.0"
   },
   "devDependencies": {
