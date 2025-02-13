@@ -140,7 +140,7 @@ const carouselConfig = {
                   <button
                     @click="addSegment(pieIndex)"
                     class="bg-green-500 text-white px-3 py-1 rounded mb-4"
-                    :disabled="getTotalPercentage(pieIndex) >= 100"
+                    :disabled="getTotalPercentage(pieIndex) >= 100 || pieCharts[pieIndex].segments.length >= (pieItems[pieIndex] ? pieItems[pieIndex].length : 0)"
                   >
                     Add Segment
                   </button>
@@ -158,8 +158,52 @@ const carouselConfig = {
             </template>
 
           </Carousel>
-
         </div>
+
+        <button
+          @click="calculateSimilaritiesDefault"
+          :disabled="loadingDefaultSimilarities"
+          class="text-white px-3 py-1 rounded mb-4"
+          :class="loadingDefaultSimilarities
+          ? 'bg-green-300'
+          : 'bg-green-500'"
+        >
+          {{loadingDefaultSimilarities ? "Loading..." : "Calculate similarities"}}
+        </button>
+        <!-- ================== NEW RESULTS SECTION ================== -->
+        <!-- Simple grid of cards displaying the image, link, and description -->
+        <div v-if="defaultSimilaritiesResult" class="mt-6">
+          <h2 class="text-xl font-bold mb-4">Top Similarities</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a
+              v-for="(item, index) in defaultSimilaritiesResult.data"
+              :key="index"
+              :href="item.link"
+              target="_blank"
+              class="block bg-white shadow rounded p-4"
+            >
+              <!-- Display the image -->
+              <img
+                v-if="item.image"
+                :src="item.image"
+                alt="Perfume"
+                class="w-full h-auto mt-2 mb-2 object-cover"
+              />
+
+              <!-- Display the description text -->
+              <p class="text-gray-500 text-sm">
+                {{ item.description }}
+              </p>
+
+              <!-- Display the similarity score -->
+              <p class="text-gray-700 text-sm mt-2">
+                Similarity: {{ (item.similarity*100).toFixed(2) }}%
+              </p>
+            </a>
+          </div>
+        </div>
+
+
       </section>
 
       <!-- ~~~~~ SECTION II: PLACEHOLDER FOR FUTURE CONTENT ~~~~~ -->
@@ -189,7 +233,6 @@ import {
 Chart.register(PieController, ArcElement, Tooltip, Legend);
 
 // TODO:
-// Should not be able to add more segments than total unique segments for pie chart
 // Should not be able to submit a segment
 // Dropdown is kinda funky
 
@@ -201,6 +244,7 @@ export default {
   data() {
     return {
       chartCanvasRefs: [],
+      loadingDefaultSimilarities: false,
       // Data for perfume notes (Subsection 1.1)
       sliderTimeout: null,
       perfumeNotes: [],
@@ -219,7 +263,7 @@ export default {
         { segments: [{ selectedItem: null, percentage: 0 }] },
         { segments: [{ selectedItem: null, percentage: 0 }] },
       ],
-
+      defaultSimilaritiesResult: null,
       // Array to store Chart.js instances (one for each pie chart)
       chartInstances: [null, null, null, null],
     };
@@ -283,6 +327,25 @@ export default {
     // Updated note removal handler
     removeNote(index) {
       this.selectedNotes.splice(index, 1);
+    },
+    calculateSimilaritiesDefault(){
+      this.defaultSimilaritiesResult = null;
+      this.loadingDefaultSimilarities = true;
+      apiClient
+        .post("/test/pf-similarities-default/", {
+          w_notes: 0.1,
+          w_categories: 0.9,
+          notes: this.selectedNotes,
+          categories: this.pieCharts.flatMap(chart => chart.segments)
+        })
+        .then((response) => {
+          console.log(response);
+          this.defaultSimilaritiesResult = response;
+          this.loadingDefaultSimilarities = false;
+        })
+        .catch((error) => {
+          console.error("Error calculating default similarities:", error);
+        });
     },
     // Fetch perfume notes from the backend
     fetchPerfumeNotes() {
@@ -360,8 +423,17 @@ export default {
 
     // Modified addSegment method
     addSegment(pieIndex) {
-      const currentTotal = this.getTotalPercentage(pieIndex);
-      if (currentTotal < 100) {
+      // Get the number of available options for this pie chart.
+      const availableOptions = (this.pieItems[pieIndex] || []).length;
+      const currentSegmentCount = this.pieCharts[pieIndex].segments.length;
+
+      // If we've reached the maximum number of segments, exit early.
+      if (currentSegmentCount >= availableOptions) {
+        return;
+      }
+
+      // Additionally, ensure the total percentage is less than 100.
+      if (this.getTotalPercentage(pieIndex) < 100) {
         this.pieCharts[pieIndex].segments.push({
           selectedItem: null,
           percentage: 0,

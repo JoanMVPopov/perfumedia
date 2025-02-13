@@ -13,6 +13,8 @@ from rest_framework.views import APIView
 
 from .models import Product, Perfume
 from .serializer import ProductSerializer
+from .utils.manh_jac_sim import calculate_notes_jaccard, calculate_manhattan
+
 
 # def index(request):
 #     return HttpResponse("Hello, world. You're at the polls index.")
@@ -395,29 +397,93 @@ class PFPieItems(APIView):
 
 
 class PFDefaultSimilarity(APIView):
-    def get(self, request):
-        # # Parse the JSON body
-        # body_data = json.loads(request.body)
-        #
-        # # Extract parameters
-        # decade = body_data.get('decade')
-        # gender = body_data.get('gender')
+    def post(self, request):
+        try:
+            body_data = json.loads(request.body)
 
-        decade = request.query_params.get('decade', None)
-        gender = request.query_params.get('gender', None)
+            # Extract parameters
+            notes_request = body_data.get('notes')
+            categories_request = body_data.get('categories')
+            w_notes_request = body_data.get('w_notes')
+            w_categories_request = body_data.get('w_categories')
 
-        if not decade or not gender:
-            return Response(
-                {"error": "Both 'decade' and 'gender' parameters are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            print(notes_request)
+            print(categories_request)
+            print(w_notes_request)
+            print(w_categories_request)
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+            queryset = Perfume.objects.all().values()
+            data = pd.DataFrame.from_records(queryset).reset_index(drop=True)
 
-        # Ensure the folder exists
-        if not os.path.exists(folder_path):
-            return Response({'error': 'Folder not found'},
-                            status=status.HTTP_404_NOT_FOUND)
+            categories = ['type', 'style', 'season', 'occasion']
+
+            exploded_categories = None
+
+            for category in categories:
+                exploded_dict = {}
+
+                df_type = data[category]
+                df_type_nums = data[f'{category}_numbers']
+
+                for index, category_row in enumerate(df_type):
+                    for index_cat, category_curr_name in enumerate(category_row):
+                        if category_curr_name not in exploded_dict:
+                            exploded_dict[category_curr_name] = [0] * len(df_type_nums)
+
+                        exploded_dict[category_curr_name][index] = df_type_nums.iloc[index][index_cat]
+
+                exploded_categories = pd.concat([exploded_categories, pd.DataFrame(exploded_dict)], axis=1)
+
+            # encode the categories
+            categories_request_encoded = []
+
+            for col in exploded_categories.columns:
+                found = False
+                for segment in categories_request:
+                    if col == segment['selectedItem']['name']:
+                        categories_request_encoded.append(segment['percentage'])
+                        found = True
+                        break
+                if not found:
+                    categories_request_encoded.append(0)
+
+            notes = data['notes']
+            notes_dummies = notes.explode().str.get_dummies().groupby(level=0).max()
+
+            # one-hot encode notes from request
+            notes_request_onehot = [1 if col in notes_request else 0 for col in notes_dummies.columns]
+
+            print(categories_request_encoded)
+            print("--------------")
+            print(notes_request_onehot)
+            print("--------------")
+
+            similarities = []
+
+            for i in range(len(data)):
+                notes_similarity = calculate_notes_jaccard(notes_request_onehot,
+                                                           notes_dummies.iloc[i, :].tolist())
+                categories_similarity = calculate_manhattan(categories_request_encoded,
+                                                            exploded_categories.iloc[i, :].tolist(), 400.0)
+
+                sim = w_notes_request * notes_similarity + w_categories_request * categories_similarity
+                similarities.append({
+                    "similarity": sim,
+                    "link": data.iloc[i]["link"],
+                    "description": data.iloc[i]["description"],
+                    "image": data.iloc[i]["image"]
+                })
+
+            similarities = sorted(similarities, key=lambda x: x['similarity'], reverse=True)
+
+            # return top 20 most similar
+            return Response(similarities[:20], status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({'error': "Could not calculate similarities"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class PFModelSimilarity(APIView):
     def get(self, request):
         # # Parse the JSON body
