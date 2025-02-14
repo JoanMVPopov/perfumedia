@@ -464,7 +464,7 @@ class PFDefaultSimilarity(APIView):
                 notes_similarity = calculate_notes_jaccard(notes_request_onehot,
                                                            notes_dummies.iloc[i, :].tolist())
                 categories_similarity = calculate_manhattan(categories_request_encoded,
-                                                            exploded_categories.iloc[i, :].tolist(), 400.0)
+                                                            exploded_categories.iloc[i, :].tolist(), 800.0)
 
                 sim = w_notes_request * notes_similarity + w_categories_request * categories_similarity
                 similarities.append({

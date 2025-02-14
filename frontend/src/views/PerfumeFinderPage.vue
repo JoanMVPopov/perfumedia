@@ -7,6 +7,7 @@ const carouselConfig = {
   wrapAround: false,
   breakpointMode: 'carousel'
 }
+
 </script>
 
 <template>
@@ -31,10 +32,113 @@ const carouselConfig = {
       <section id="build-your-own" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">I. Build Your Own Perfume</h1>
 
-        <!-- ===== SUBSECTION 1.1: Perfume Notes ===== -->
+        <!-- ===== SUBSECTION 1.2: Pie Charts ===== -->
+        <!-- Updated Pie Charts section -->
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">Customize Pie Charts</h2>
+
+          <Carousel v-bind="carouselConfig" @init="onCarouselInit" @slide-end="onSlideEnd">
+              <Slide v-for="(pie, pieIndex) in pieCharts"
+                :key="pieIndex">
+
+                <div class="flex-row mb-12">
+                  <h3 class="text-lg font-bold mb-2">
+                  Pie Chart for {{categories[pieIndex]}}
+                  </h3>
+
+                  <!-- Total percentage warning -->
+                  <div
+                    :class="getTotalPercentage(pieIndex) !== 100
+                    ? 'text-red-500 mb-2'
+                    : 'text-green-400 mb-2'"
+                  >
+                    {{getTotalPercentage(pieIndex) !== 100
+                      ? `Total must equal 100% (Current: ${getTotalPercentage(pieIndex)}%)`
+                      : "Correct percentage allocation"}}
+                  </div>
+
+                  <!-- Unassigned segments warning -->
+                  <div
+                    :class="!currentPieSegmentsAllocated(pieIndex)
+                    ? 'text-red-500 mb-2'
+                    : 'text-green-400 mb-2'"
+                  >
+                    {{!currentPieSegmentsAllocated(pieIndex)
+                      ? "All segments need to be assigned"
+                      : "All segments assigned"}}
+                  </div>
+
+                  <!-- Pie Chart segments -->
+                  <div
+                    v-for="(segment, segIndex) in pie.segments"
+                    :key="segIndex"
+                    class="flex items-center space-x-4 mb-4"
+                  >
+                    <!-- Dropdown for selecting an item -->
+                    <v-select
+                      :options="formattedPieItems(pieIndex)"
+                      v-model="segment.selectedItem"
+                      placeholder="Select item"
+                      label="name"
+                      class="w-48"
+                      @option:selected="updateChart(pieIndex)"
+                    ></v-select>
+
+                    <!-- Slider for segment percentage -->
+                    <div class="flex-1 flex items-center space-x-2">
+                      <input
+                        type="range"
+                        v-model.number="segment.percentage"
+                        min="1"
+                        max="100"
+                        class="w-full"
+                        @input="handleSliderInput(pieIndex, segIndex)"
+                        @change="finalizeSliderChange(pieIndex)"
+                      />
+                      <span class="w-12 text-right">{{segment.percentage}}%</span>
+                    </div>
+
+                    <!-- Button to remove the segment -->
+                    <button
+                      @click="removeSegment(pieIndex, segIndex)"
+                      class="bg-red-500 text-white px-2 py-1 rounded"
+                      :disabled="pie.segments.length <= 1"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <!-- Button to add a new segment -->
+                  <button
+                    @click="addSegment(pieIndex)"
+                    class="text-white px-3 py-1 rounded mb-4"
+                    :class="getTotalPercentage(pieIndex) >= 100 || pieCharts[pieIndex].segments.length >= (pieItems[pieIndex] ? pieItems[pieIndex].length : 0)
+                    ? 'bg-green-300 cursor-not-allowed'
+                    : 'bg-green-500'"
+                    :disabled="getTotalPercentage(pieIndex) >= 100 || pieCharts[pieIndex].segments.length >= (pieItems[pieIndex] ? pieItems[pieIndex].length : 0)"
+                  >
+                    Add Segment
+                  </button>
+
+                  <!-- Canvas for Chart.js pie chart -->
+                  <div class="w-full" style="height:300px;">
+                    <canvas :id="'pieChart' + pieIndex" :ref="el => chartCanvasRefs[pieIndex] = el"></canvas>
+                  </div>
+                </div>
+              </Slide>
+
+            <template #addons>
+              <Navigation />
+              <Pagination />
+            </template>
+
+          </Carousel>
+        </div>
+
+         <!-- ===== SUBSECTION 1.1: Perfume Notes ===== -->
         <!-- Updated Perfume Notes section -->
         <div class="mb-8">
-          <h2 class="text-xl font-semibold mb-4">Select Perfume Notes</h2>
+          <h2 class="text-xl font-semibold mb-4">(OPTIONAL) Select Perfume Notes</h2>
           <div class="flex flex-row space-x-4">
             <!-- Dropdown for selecting notes -->
             <div class="w-64">
@@ -73,103 +177,45 @@ const carouselConfig = {
           </div>
         </div>
 
-        <!-- ===== SUBSECTION 1.2: Pie Charts ===== -->
-        <!-- Updated Pie Charts section -->
-        <div class="mb-8">
-          <h2 class="text-xl font-semibold mb-4">Customize Pie Charts</h2>
+        <div>
+          <h2 class="text-xl font-semibold mb-4">Get similar perfumes</h2>
 
-          <Carousel v-bind="carouselConfig" @init="onCarouselInit" @slide-end="onSlideEnd">
-              <Slide v-for="(pie, pieIndex) in pieCharts"
-                :key="pieIndex">
+          <div v-if="hasSelectedNotes()">
+            <div class="p-4 w-3/6">
+              <label class="block mb-2 font-semibold">Adjust Weights</label>
 
-                <div class="flex-row mb-12">
-                  <h3 class="text-lg font-bold mb-2">
-                  Pie Chart for {{categories[pieIndex]}}
-                  </h3>
+              <div class="flex justify-between text-sm mb-2">
+                <span>Weight Pie Charts: {{ (weight_categories*100).toFixed(0) }}%</span>
+                <span>Weight Notes: {{ (weight_notes*100).toFixed(0) }}%</span>
+              </div>
 
-                  <!-- Total percentage warning -->
-                  <div
-                    :class="getTotalPercentage(pieIndex) !== 100
-                    ? 'text-[#C96868] mb-2'
-                    : 'text-[#7EACB5] mb-2'"
-                  >
-                    Total must equal 100% (Current: {{getTotalPercentage(pieIndex)}}%)
-                  </div>
+              <!-- Slider -->
+              <input
+                type="range"
+                min="0" max="1" step="0.01"
+                v-model.number="weight_categories"
+                class="w-full"
+              />
+            </div>
+          </div>
 
-                  <!-- Pie Chart segments -->
-                  <div
-                    v-for="(segment, segIndex) in pie.segments"
-                    :key="segIndex"
-                    class="flex items-center space-x-4 mb-4"
-                  >
-                    <!-- Dropdown for selecting an item -->
-                    <v-select
-                      :options="formattedPieItems(pieIndex)"
-                      v-model="segment.selectedItem"
-                      placeholder="Select item"
-                      label="name"
-                      class="w-48"
-                      @option:selected="updateChart(pieIndex)"
-                    ></v-select>
+          <button
+          @click="calculateSimilaritiesDefault"
+          :disabled="!hasSelectedCategories() || loadingDefaultSimilarities"
+          class="text-white px-3 py-1 rounded mb-4"
+          :class="{
+            'bg-green-300 cursor-not-allowed': !hasSelectedCategories() || loadingDefaultSimilarities,
+            'bg-green-500 cursor-pointer': hasSelectedCategories() && !loadingDefaultSimilarities
+          }"
+          >
+            {{loadingDefaultSimilarities ? "Loading..." : "Calculate similarities"}}
+          </button>
 
-                    <!-- Slider for segment percentage -->
-                    <div class="flex-1 flex items-center space-x-2">
-                      <input
-                        type="range"
-                        v-model.number="segment.percentage"
-                        min="0"
-                        max="100"
-                        class="w-full"
-                        @input="handleSliderInput(pieIndex, segIndex)"
-                        @change="finalizeSliderChange(pieIndex)"
-                      />
-                      <span class="w-12 text-right">{{segment.percentage}}%</span>
-                    </div>
-
-                    <!-- Button to remove the segment -->
-                    <button
-                      @click="removeSegment(pieIndex, segIndex)"
-                      class="bg-red-500 text-white px-2 py-1 rounded"
-                      :disabled="pie.segments.length <= 1"
-                    >
-                      Remove
-                    </button>
-                  </div>
-
-                  <!-- Button to add a new segment -->
-                  <button
-                    @click="addSegment(pieIndex)"
-                    class="bg-green-500 text-white px-3 py-1 rounded mb-4"
-                    :disabled="getTotalPercentage(pieIndex) >= 100 || pieCharts[pieIndex].segments.length >= (pieItems[pieIndex] ? pieItems[pieIndex].length : 0)"
-                  >
-                    Add Segment
-                  </button>
-
-                  <!-- Canvas for Chart.js pie chart -->
-                  <div class="w-full" style="height:300px;">
-                    <canvas :id="'pieChart' + pieIndex" :ref="el => chartCanvasRefs[pieIndex] = el"></canvas>
-                  </div>
-                </div>
-              </Slide>
-
-            <template #addons>
-              <Navigation />
-              <Pagination />
-            </template>
-
-          </Carousel>
+          <div v-if="!hasSelectedCategories()" class="mb-4">
+            <p class="text-red-400">You need to complete the pie charts before proceeding.</p>
+          </div>
         </div>
 
-        <button
-          @click="calculateSimilaritiesDefault"
-          :disabled="loadingDefaultSimilarities"
-          class="text-white px-3 py-1 rounded mb-4"
-          :class="loadingDefaultSimilarities
-          ? 'bg-green-300'
-          : 'bg-green-500'"
-        >
-          {{loadingDefaultSimilarities ? "Loading..." : "Calculate similarities"}}
-        </button>
         <!-- ================== NEW RESULTS SECTION ================== -->
         <!-- Simple grid of cards displaying the image, link, and description -->
         <div v-if="defaultSimilaritiesResult" class="mt-6">
@@ -230,6 +276,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 Chart.register(PieController, ArcElement, Tooltip, Legend);
 
 // TODO:
@@ -258,17 +305,21 @@ export default {
       // Array of 4 pie charts. Each chart has an array of segments.
       // Each segment contains a selected item and a percentage value.
       pieCharts: [
-        { segments: [{ selectedItem: null, percentage: 0 }] },
-        { segments: [{ selectedItem: null, percentage: 0 }] },
-        { segments: [{ selectedItem: null, percentage: 0 }] },
-        { segments: [{ selectedItem: null, percentage: 0 }] },
+        { segments: [{ selectedItem: null, percentage: 1 }] },
+        { segments: [{ selectedItem: null, percentage: 1 }] },
+        { segments: [{ selectedItem: null, percentage: 1 }] },
+        { segments: [{ selectedItem: null, percentage: 1 }] },
       ],
       defaultSimilaritiesResult: null,
       // Array to store Chart.js instances (one for each pie chart)
       chartInstances: [null, null, null, null],
+      weight_categories: 0.5,
     };
   },
   computed: {
+    weight_notes() {
+      return 1 - this.weight_categories; // Reactively updates when weight1 changes
+    },
     // Filter out already selected notes from the dropdown options
     availableNotes() {
       return this.perfumeNotes.filter(
@@ -291,6 +342,33 @@ export default {
     }
   },
   methods: {
+    hasSelectedNotes(){
+      return this.selectedNotes.length >= 1;
+    },
+    currentPieSegmentsAllocated(index){
+      for (let segment of this.pieCharts[index].segments){
+        if (segment.selectedItem === null) {
+          return false;
+        }
+      }
+      return true;
+    },
+    hasSelectedCategories(){
+      // check if all pie charts sum up to 100
+      for (let i=0; i<4; i++){
+        if (this.getTotalPercentage(i) < 100) {
+          return false;
+        }
+      }
+
+      for (let segment of this.pieCharts.flatMap(chart => chart.segments)){
+        if (segment.selectedItem === null) {
+          return false;
+        }
+      }
+
+      return true;
+    },
     onCarouselInit() {
     // When the carousel is initialized, update all charts
     this.pieCharts.forEach((_, index) => {
@@ -333,8 +411,8 @@ export default {
       this.loadingDefaultSimilarities = true;
       apiClient
         .post("/test/pf-similarities-default/", {
-          w_notes: 0.1,
-          w_categories: 0.9,
+          w_notes: this.weight_notes,
+          w_categories: this.weight_categories,
           notes: this.selectedNotes,
           categories: this.pieCharts.flatMap(chart => chart.segments)
         })
@@ -436,7 +514,7 @@ export default {
       if (this.getTotalPercentage(pieIndex) < 100) {
         this.pieCharts[pieIndex].segments.push({
           selectedItem: null,
-          percentage: 0,
+          percentage: 1,
         });
         this.$nextTick(() => {
           this.updateChart(pieIndex);
