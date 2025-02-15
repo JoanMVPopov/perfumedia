@@ -219,7 +219,23 @@ const carouselConfig = {
         <!-- ================== NEW RESULTS SECTION ================== -->
         <!-- Simple grid of cards displaying the image, link, and description -->
         <div v-if="defaultSimilaritiesResult" class="mt-6">
-          <h2 class="text-xl font-bold mb-4">Top Similarities</h2>
+          <div class="relative flex items-center h-12 mb-6">
+            <!-- Centered item -->
+            <h2 class="mx-auto text-xl font-bold">Results</h2>
+
+            <!-- Right-aligned item -->
+            <div class="absolute right-0">
+              <p>Sort By:</p>
+              <v-select
+                :options="['Similarity', 'Scent', 'Longevity', 'Sillage', 'Bottle', 'Value for Money']"
+                v-model="selectedDefaultSimilaritySortingOption"
+                class="w-48"
+                @option:selected="sortSimilaritiesBy(selectedDefaultSimilaritySortingOption, this.defaultSimilaritiesResult.data)"
+              ></v-select>
+            </div>
+          </div>
+
+
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
               v-for="(item, index) in defaultSimilaritiesResult.data"
@@ -252,12 +268,73 @@ const carouselConfig = {
 
       </section>
 
-      <!-- ~~~~~ SECTION II: PLACEHOLDER FOR FUTURE CONTENT ~~~~~ -->
       <section id="second-section" class="mb-12 scroll-mt-20">
-        <h1 class="text-2xl font-bold mb-4">II. Second Section (Coming Soon)</h1>
-        <p class="text-gray-600">
-          This section will be implemented in future updates.
-        </p>
+        <h1 class="text-2xl font-bold mb-4">II. Chat Input</h1>
+        <div class="mt-4 flex">
+          <input
+            v-model="chatInput"
+            @keyup.enter="calculateModelSimilarities()"
+            :disabled="loadingModelSimilarities"
+            type="text"
+            placeholder="Type your message..."
+            class="flex-grow border p-2 rounded-l-lg focus:outline-none"
+          />
+          <button
+            @click="calculateModelSimilarities()"
+            :disabled="loadingModelSimilarities"
+            class="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600 focus:outline-none"
+          >
+            Send
+          </button>
+        </div>
+
+        <div v-if="currentModelSimilarityProgress !== 100 && loadingModelSimilarities">
+          <p>Current progress: {{ currentModelSimilarityProgress }}%</p>
+          <progress :value="currentModelSimilarityProgress" max="100"></progress>
+        </div>
+
+        <!-- ================== MODEL RESULTS SECTION ================== -->
+        <div v-if="modelSimilaritiesResult" class="mt-6">
+          <div class="relative flex items-center h-12 mb-6">
+            <!-- Centered item -->
+            <h2 class="mx-auto text-xl font-bold">Results</h2>
+
+            <!-- Right-aligned item -->
+            <div class="absolute right-0">
+              <p>Sort By:</p>
+              <v-select
+                :options="['Similarity', 'Scent', 'Longevity', 'Sillage', 'Bottle', 'Value for Money']"
+                v-model="selectedDefaultModelSimilaritySortingOption"
+                class="w-48"
+                @option:selected="sortSimilaritiesBy(selectedDefaultModelSimilaritySortingOption, this.modelSimilaritiesResult)"
+              ></v-select>
+            </div>
+          </div>
+
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a
+              v-for="(item, index) in modelSimilaritiesResult"
+              :key="index"
+              :href="item.link"
+              target="_blank"
+              class="block bg-white shadow rounded p-4"
+            >
+              <!-- Display the image -->
+              <img
+                v-if="item.image"
+                :src="item.image"
+                alt="Perfume"
+                class="w-full h-auto mt-2 mb-2 object-cover"
+              />
+
+              <!-- Display the description text -->
+              <p class="text-gray-500 text-sm">
+                {{ item.description }}
+              </p>
+            </a>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -290,13 +367,19 @@ export default {
   },
   data() {
     return {
+      chatInput: "",
       chartCanvasRefs: [],
       loadingDefaultSimilarities: false,
+      modelSimilaritiesResult: null,
+      loadingModelSimilarities: false,
+      currentModelSimilarityProgress: 0,
       // Data for perfume notes (Subsection 1.1)
       sliderTimeout: null,
       perfumeNotes: [],
       selectedNotes: [],
       selectedNote: null,
+      selectedDefaultSimilaritySortingOption: "Similarity",
+      selectedDefaultModelSimilaritySortingOption: "Similarity",
       // Data for items to be used in pie charts (Subsection 1.2)
       // pieItems: [[], [], [], []],
       pieItems: [],
@@ -342,6 +425,28 @@ export default {
     }
   },
   methods: {
+    sortSimilaritiesBy(option, resultObject) {
+  switch (option) {
+    case "Similarity":
+      resultObject.sort((a, b) => b.similarity - a.similarity);
+      break;
+    case "Scent":
+      resultObject.sort((a, b) => b.scent - a.scent);
+      break;
+    case "Longevity":
+      resultObject.sort((a, b) => b.longevity - a.longevity);
+      break;
+    case "Sillage":
+      resultObject.sort((a, b) => b.sillage - a.sillage);
+      break;
+    case "Bottle":
+      resultObject.sort((a, b) => b.bottle - a.bottle);
+      break;
+    case "Value for Money":
+      resultObject.sort((a, b) => b.value_for_money - a.value_for_money);
+      break;
+  }
+},
     hasSelectedNotes(){
       return this.selectedNotes.length >= 1;
     },
@@ -425,6 +530,81 @@ export default {
           console.error("Error calculating default similarities:", error);
         });
     },
+    // calculateModelSimilarities(){
+    //   this.modelSimilaritiesResult = null;
+    //   this.loadingModelSimilarities = true;
+    //   apiClient
+    //     .post("/test/pf-similarities-model/", {
+    //       query: this.chatInput
+    //     })
+    //     .then((response) => {
+    //       console.log(response);
+    //       this.modelSimilaritiesResult = response;
+    //       this.loadingModelSimilarities = false;
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error calculating default similarities:", error);
+    //     });
+    // },
+    // In your Vue component or wherever you handle the POST:
+    async calculateModelSimilarities() {
+      this.modelSimilaritiesResult = null;
+      this.loadingModelSimilarities = true;
+
+      const response = await fetch("http://localhost:8000/django/test/pf-similarities-model/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({query: this.chatInput}), // your user input
+      });
+
+      if (!response.ok) {
+        console.error("Error status:", response.status);
+        return;
+      }
+
+      // Read the streamed body
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const {value, done} = await reader.read();
+        if (done) break;
+
+        const chunkText = decoder.decode(value, {stream: true});
+        // chunkText may contain SSE-style lines, e.g. "data: {...}\n\n"
+        console.log("Chunk received:", chunkText);
+
+        // If you're sending SSE-formatted lines, parse them:
+        // 1) split by newline
+        // 2) parse JSON after 'data: '
+        const lines = chunkText.split("\n");
+        for (const line of lines) {
+          if (line.startsWith("data:")) {
+            const jsonPart = line.replace("data:", "").trim();
+            if (jsonPart) {
+              try {
+                const parsed = JSON.parse(jsonPart);
+                if (parsed.progress !== undefined) {
+                  console.log(`Progress: ${parsed.progress}%`);
+                  this.currentModelSimilarityProgress = parsed.progress;
+                }
+                if (parsed.final !== undefined) {
+                  console.log("Got final results:", parsed.final);
+                  this.modelSimilaritiesResult = parsed.final;
+                  this.loadingModelSimilarities = false;
+                  await reader.cancel();
+                }
+              } catch (err) {
+                console.error("JSON parse error:", err);
+              }
+            }
+          }
+        }
+      }
+
+      console.log("ALL DONE")
+    },
     // Fetch perfume notes from the backend
     fetchPerfumeNotes() {
       apiClient
@@ -442,19 +622,12 @@ export default {
       apiClient
         .get("/test/pf-pie-items")
         .then((response) => {
-          console.log(response.data.piechart_items);
           let items;
           items = response.data.piechart_items;
-          console.log(items)
-          // this.pieItems[0] = items[0];
-          // this.pieItems[1] = items[1];
-          // this.pieItems[2] = items[2];
-          // this.pieItems[3] = items[3];
           this.pieItems.push(items[0]);
           this.pieItems.push(items[1]);
           this.pieItems.push(items[2]);
           this.pieItems.push(items[3]);
-          console.log(this.pieItems[0]);
         })
         .catch((error) => {
           console.error("Error fetching pie items:", error);
@@ -607,4 +780,18 @@ export default {
 :deep(.v-select .vs__search) {
   margin: 0;
 }
+
+:deep(.carousel__next) {
+  inset-inline-end: 100px; /* moves the right arrow 10px from the edge */
+  background-color: #7EACB5; /* Set your desired background color */
+  border-radius: 50%; /* Optional: make it round */
+  padding: 5px; /* Optional: add some padding */
+}
+:deep(.carousel__prev) {
+  inset-inline-start: 100px; /* moves the left arrow 10px from the edge */
+  background-color: #7EACB5; /* Set your desired background color */
+  border-radius: 50%; /* Optional: make it round */
+  padding: 5px; /* Optional: add some padding */
+}
+
 </style>

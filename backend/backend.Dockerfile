@@ -28,5 +28,5 @@ ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
 # Inform Docker that the container listens on the specified network port at runtime
 EXPOSE ${PORT}
 
-CMD python backend/manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:"${PORT}"
+CMD python backend/manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:"${PORT}" --timeout 120
 

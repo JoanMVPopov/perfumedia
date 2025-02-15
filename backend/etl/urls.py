@@ -18,4 +18,5 @@ urlpatterns = [
     path("pf-perfume-notes/", views.PFNotes.as_view()),
     path("pf-pie-items/", views.PFPieItems.as_view()),
     path("pf-similarities-default/", views.PFDefaultSimilarity.as_view()),
+    path("pf-similarities-model/", views.PFModelSimilarity.as_view()),
 ]

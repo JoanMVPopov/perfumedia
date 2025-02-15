@@ -40,6 +40,7 @@ class Perfume(models.Model):
     rel_year = models.IntegerField()
     rel_decade = models.IntegerField()
     description = models.TextField(default="No description")
+    generated_descriptions = models.TextField(default="No description")
     image = models.TextField(default="No image")
     notes = ArrayField(
         models.CharField(max_length=50),

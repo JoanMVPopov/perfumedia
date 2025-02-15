@@ -1,19 +1,29 @@
 import ast
 import base64
+import gc
 import json
 import os
+import sys
+import tracemalloc
+from pathlib import Path
 
 import pandas as pd
+import torch
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from rest_framework import status
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from sentence_transformers import CrossEncoder
+from torch.ao.quantization import quantize_dynamic
 
 from .models import Product, Perfume
 from .serializer import ProductSerializer
+from .utils.ModelSingleton import Model
+from .utils.generateDescriptionsFallback import generateDescriptions
 from .utils.manh_jac_sim import calculate_notes_jaccard, calculate_manhattan
+from .utils.streamingModelSimilarity import streaming_inference_generator
 
 
 # def index(request):
@@ -407,11 +417,6 @@ class PFDefaultSimilarity(APIView):
             w_notes_request = body_data.get('w_notes')
             w_categories_request = body_data.get('w_categories')
 
-            print(notes_request)
-            print(categories_request)
-            print(w_notes_request)
-            print(w_categories_request)
-
             queryset = Perfume.objects.all().values()
             data = pd.DataFrame.from_records(queryset).reset_index(drop=True)
 
@@ -453,11 +458,6 @@ class PFDefaultSimilarity(APIView):
             # one-hot encode notes from request
             notes_request_onehot = [1 if col in notes_request else 0 for col in notes_dummies.columns]
 
-            print(categories_request_encoded)
-            print("--------------")
-            print(notes_request_onehot)
-            print("--------------")
-
             similarities = []
 
             for i in range(len(data)):
@@ -471,7 +471,12 @@ class PFDefaultSimilarity(APIView):
                     "similarity": sim,
                     "link": data.iloc[i]["link"],
                     "description": data.iloc[i]["description"],
-                    "image": data.iloc[i]["image"]
+                    "image": data.iloc[i]["image"],
+                    "scent": data.iloc[i]['scent'],
+                    "longevity": data.iloc[i]['longevity'],
+                    "sillage": data.iloc[i]['sillage'],
+                    "bottle": data.iloc[i]['bottle'],
+                    "value_for_money": data.iloc[i]['value_for_money']
                 })
 
             similarities = sorted(similarities, key=lambda x: x['similarity'], reverse=True)
@@ -483,29 +488,58 @@ class PFDefaultSimilarity(APIView):
             return Response({'error': "Could not calculate similarities"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class PFModelSimilarity(APIView):
-    def get(self, request):
-        # # Parse the JSON body
-        # body_data = json.loads(request.body)
-        #
-        # # Extract parameters
-        # decade = body_data.get('decade')
-        # gender = body_data.get('gender')
+    def post(self, request):
+        try:
+            body_data = json.loads(request.body)
+            # Extract parameters
+            query = body_data.get('query')
 
-        decade = request.query_params.get('decade', None)
-        gender = request.query_params.get('gender', None)
+            perfumes_ordered = Perfume.objects.all().order_by('id')
+            queryset = perfumes_ordered.values()
+            data = pd.DataFrame.from_records(queryset).reset_index(drop=True)
 
-        if not decade or not gender:
-            return Response(
-                {"error": "Both 'decade' and 'gender' parameters are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            print("Loading model")
+            # Load the model into memory once
+            MODEL = Model()
+            # MODEL = None
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+            print("Model initialized\n")
 
-        # Ensure the folder exists
-        if not os.path.exists(folder_path):
-            return Response({'error': 'Folder not found'},
-                            status=status.HTTP_404_NOT_FOUND)
+            if 'generated_descriptions' not in data.columns or data.at[0, 'generated_descriptions'] == "No description":
+                print("Fallback activated")
+                categories = ['type', 'style', 'season', 'occasion']
+                ratings = ['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']
+
+                # this also updates data in-place
+                generateDescriptions(data, categories, ratings)
+
+                perfumes = list(perfumes_ordered)
+
+                # Update each perfume instance
+                for idx, perfume in enumerate(perfumes):
+                    perfume.generated_descriptions = data.iloc[idx]['generated_descriptions']
+
+                # Perform bulk update in a single query
+                Perfume.objects.bulk_update(perfumes, ['generated_descriptions'])
+
+            print("After if fallback")
+
+            number_of_perfumes = len(perfumes_ordered)
+            step = 100
+
+            # Create a streaming generator
+            generator = streaming_inference_generator(query, data, MODEL, number_of_perfumes, step)
+
+            # Return a StreamingHttpResponse with SSE content
+            response = StreamingHttpResponse(generator, content_type='text/event-stream')
+            response["Cache-Control"] = "no-cache"
+            response["X-Accel-Buffering"] = "no"  # Helps with Nginx proxies
+
+
+            return response
+        except Exception as e:
+            print(e)
+            return Response({'error': "Could not calculate similarities"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
