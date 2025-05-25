@@ -19,4 +19,6 @@ urlpatterns = [
     path("pf-pie-items/", views.PFPieItems.as_view()),
     path("pf-similarities-default/", views.PFDefaultSimilarity.as_view()),
     path("pf-similarities-model/", views.PFModelSimilarity.as_view()),
+    path("clustering-pca-analysis/", views.ClusteringPcaAnalysis.as_view()),
+    path("clustering-curated-cluster-details/", views.CuratedClusteringInformation.as_view()),
 ]

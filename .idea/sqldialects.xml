@@ -2,7 +2,11 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/airflow/dags/etl-pipeline.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/airflow/dags/links-dag.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/airflow/dags/utilities/ETLScraper.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/airflow/dags/utilities/ListLinkScraper.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/airflow/dags/utilities/dimens_reduc_and_clustering.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/airflow/dags/utilities/ssh_tunnel.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/airflow/scripts/init.sql" dialect="GenericSQL" />
   </component>
 </project>

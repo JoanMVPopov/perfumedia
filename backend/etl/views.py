@@ -543,3 +543,246 @@ class PFModelSimilarity(APIView):
             return Response({'error': "Could not calculate similarities"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+# --- NEW CLUSTERING ENDPOINTS ---
+
+def generate_clustering_title(filename_no_ext, decade, gender, dr_method_selected=None):
+    """
+    Generates a more descriptive title from the filename.
+    This function will need significant customization based on your exact filenames.
+    """
+    parts = filename_no_ext.split('_')
+    base_info = f"{decade}, {gender}"
+
+    # PCA Variance/Loadings
+    if "d_bar_explained_variance" in filename_no_ext:
+        dim = parts[-4][:-1]  # e.g. "2d" -> "2"
+        return f"PCA Explained Variance ({dim}D) - {base_info}"
+    if "d_component" in filename_no_ext and "loadings" in filename_no_ext:
+        comp_num_part = [p for p in parts if p.startswith("component")]
+        comp_num = comp_num_part[0].replace("component_", "") if comp_num_part else "N/A"
+        dim = parts[parts.index(comp_num_part[0]) - 1][:-1] if comp_num_part else "N/A"
+        return f"PCA Loadings for Component {comp_num} ({dim}D) - {base_info}"
+
+    # Curated (PCA based) analysis
+    if "curated" in filename_no_ext:
+        algo = "UnknownAlgo"
+        try:  # Try to extract algo
+            if "all_clustering_algos" in filename_no_ext:  # Main visualization plot
+                viz_method_curated = parts[parts.index("curated") - 1]
+                return f"{viz_method_curated.upper()} Viz of Curated PCA Results - {base_info}"
+            # Cluster detail plots
+            # e.g., 1990_Feminine_violin_plots_curated_cluster0_pca_KMeans.png
+            cluster_idx = filename_no_ext.find("cluster")
+            cluster_num = filename_no_ext[cluster_idx + len("cluster")]
+            plot_type_str = filename_no_ext.split('_curated_cluster')[0]
+            plot_type = plot_type_str[len(decade) + len(gender) + 2:].replace("_", " ").title()  # e.g. Violin Plots
+            algo = parts[-1]  # Last part is algo
+            return f"{algo} (Curated PCA) - Cl. {cluster_num}: {plot_type} - {base_info}"
+        except Exception:
+            return f"Curated PCA Analysis: {filename_no_ext.replace('_', ' ')} - {base_info}"
+
+    # Other DR (non-curated) analysis
+    if dr_method_selected:  # This implies we are in the "Other DR" section
+        if f"_{dr_method_selected}_2D_all_clustering_algos" in filename_no_ext:
+            return f"{dr_method_selected.upper()} 2D Visualizations Overview - {base_info}"
+        # Cluster detail plots
+        # e.g., 1990_Feminine_violin_plots_cluster0_umap_KMeans.png
+        try:
+            cluster_idx = filename_no_ext.find("cluster")
+            cluster_num = filename_no_ext[cluster_idx + len("cluster")]
+
+            # Find plot type (e.g. violin_plots)
+            plot_type_parts = []
+            temp_parts = filename_no_ext.split(f"_cluster{cluster_num}_")[0].split('_')
+            # plot_type is parts after decade and gender
+            plot_type = "_".join(temp_parts[2:]).replace("_", " ").title()
+
+            # Algo is the last part
+            algo = parts[-1]
+            # DR method is before algo
+            dr_in_file = parts[-2]
+
+            if dr_in_file == dr_method_selected:  # Make sure it's for the DR method we requested
+                return f"{algo} ({dr_in_file.upper()}) - Cl. {cluster_num}: {plot_type} - {base_info}"
+            else:  # Should not happen if filtering is correct, but good to have a fallback
+                return f"DR: {dr_in_file.upper()}, Algo: {algo} - Cl. {cluster_num}: {plot_type} - {base_info}"
+
+        except Exception:
+            return f"Other DR ({dr_method_selected.upper()}) Analysis: {filename_no_ext.replace('_', ' ')} - {base_info}"
+
+    return f"Analysis: {filename_no_ext.replace('_', ' ')} - {base_info}"  # Generic fallback
+
+
+class CuratedClusteringInformation(APIView):
+    def get(self, request):
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+        clustering_method = request.query_params.get('clustering_method', None)
+        dr_method = request.query_params.get('dr_method', None)
+
+        supported_clustering_methods = ["KMeans", "AffinityPropagation", "Agglomerative", "DBSCAN", "HDBSCAN", "GaussianMixture", "SpectralClustering"]
+        supported_curated_dr_methods = ['tsne', 'umap', 'lle', 'isomap']
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        images_data = []
+        prefix = f"{decade}_{gender}_"
+
+        print(clustering_method)
+        print(dr_method)
+
+        # f'{decade}_{gender}_violin_plots_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+        # f'{decade}_{gender}_avg_categories_piecharts_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+        # f'{decade}_{gender}_notes_histogram_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+
+        for filename in sorted(os.listdir(folder_path)):
+            if filename.startswith(prefix) and filename.endswith(".png"):
+                filename_no_ext = os.path.splitext(filename)[0]
+
+                is_violin = "violin_plots_curated_cluster" in filename_no_ext
+                is_avg_cat_pie = "avg_categories_piecharts_curated_cluster" in filename_no_ext
+                is_notes_histograms = "notes_histogram_curated_cluster" in filename_no_ext
+
+                if ((is_violin or is_avg_cat_pie or is_notes_histograms)
+                        and clustering_method in filename_no_ext and dr_method in filename_no_ext):
+                    file_path = os.path.join(folder_path, filename)
+
+                    try:
+                        with open(file_path, "rb") as img_file:
+                            base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                            images_data.append({
+                                "base64": base64_str,
+                                "filename": filename  # Keep for debugging or potential future use
+                            })
+                    except Exception as e:
+                        print(f"Error processing PCA file {filename}: {e}")
+
+        if not images_data:
+            return Response({'error': 'No images found for given curated clustering algorithm and dr method'},
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response({"images": images_data}, status=status.HTTP_200_OK)
+
+class ClusteringPcaAnalysis(APIView):
+    def get(self, request):
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+
+        # if not decade or not gender or decade == 'All' or gender == 'All':
+        #     return Response(
+        #         {"error": "Specific 'decade' and 'gender' (not 'All') are required for PCA analysis."},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        images_data = []
+        prefix = f"{decade}_{gender}_"
+
+        for filename in sorted(os.listdir(folder_path)):
+            if filename.startswith(prefix) and filename.endswith(".png"):
+                filename_no_ext = os.path.splitext(filename)[0]
+
+                is_pca_variance = "d_bar_explained_variance" in filename_no_ext
+                is_pca_loadings = "d_component_" in filename_no_ext and "loadings" in filename_no_ext
+                is_curated_viz = "_curated_2D_all_clustering_algos" in filename_no_ext
+                # is_curated_cluster_detail = "_curated_cluster" in filename_no_ext and \
+                #                             ("violin_plots" in filename_no_ext or \
+                #                              "avg_categories_piecharts" in filename_no_ext or \
+                #                              "notes_histogram" in filename_no_ext)
+
+                if is_pca_variance or is_pca_loadings or is_curated_viz:
+                    file_path = os.path.join(folder_path, filename)
+                    try:
+                        with open(file_path, "rb") as img_file:
+                            base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                            images_data.append({
+                                "title": generate_clustering_title(filename_no_ext, decade, gender),
+                                "base64": base64_str,
+                                "filename": filename  # Keep for debugging or potential future use
+                            })
+                    except Exception as e:
+                        print(f"Error processing PCA file {filename}: {e}")
+
+        if not images_data:
+            return Response({'error': 'No PCA-based clustering images found for the selected filters.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response({"images": images_data}, status=status.HTTP_200_OK)
+
+
+class ClusteringOtherDrAnalysis(APIView):
+    def get(self, request):
+        decade = request.query_params.get('decade', None)
+        gender = request.query_params.get('gender', None)
+        dr_method = request.query_params.get('dr_method', None)  # e.g., 'umap', 'tsne'
+
+        # if not decade or not gender or decade == 'All' or gender == 'All' or not dr_method:
+        #     return Response(
+        #         {"error": "Specific 'decade', 'gender' (not 'All'), and 'dr_method' are required."},
+        #         status=status.HTTP_400_BAD_REQUEST
+        #     )
+
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        if not os.path.exists(folder_path):
+            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        images_data = []
+        prefix = f"{decade}_{gender}_"
+
+        for filename in sorted(os.listdir(folder_path)):
+            if filename.startswith(prefix) and filename.endswith(".png"):
+                filename_no_ext = os.path.splitext(filename)[0]
+
+                # Ensure it's NOT a curated file (to avoid overlap with PCA section)
+                if "curated" in filename_no_ext:
+                    continue
+
+                # Check if it's related to the selected dr_method
+                # Main visualization: e.g. 1990_Masculine_umap_2D_all_clustering_algos.png
+                is_other_dr_viz = f"_{dr_method}_2D_all_clustering_algos" in filename_no_ext
+
+                # Cluster details: e.g. 1990_Masculine_violin_plots_cluster0_umap_KMeans.png
+                is_other_dr_cluster_detail = (
+                        f"_cluster" in filename_no_ext and
+                        f"_{dr_method}_" in filename_no_ext and  # Check if the DR method is in the name before algo
+                        (filename_no_ext.endswith(dr_method + "_" + parts[-1]) for parts in
+                         [filename_no_ext.split('_')]) and  # More robust check
+                        ("violin_plots" in filename_no_ext or \
+                         "avg_categories_piecharts" in filename_no_ext or \
+                         "notes_histogram" in filename_no_ext)
+                )
+                # Refined check for cluster detail (ensure dr_method is directly before algo)
+                if "_cluster" in filename_no_ext and (
+                        "violin_plots" in filename_no_ext or "avg_categories_piecharts" in filename_no_ext or "notes_histogram" in filename_no_ext):
+                    parts_for_detail_check = filename_no_ext.split('_')
+                    try:
+                        # Assuming format ..._clusterX_DRMETHOD_ALGO.png
+                        if len(parts_for_detail_check) > 2 and parts_for_detail_check[-2] == dr_method:
+                            is_other_dr_cluster_detail = True
+                        else:
+                            is_other_dr_cluster_detail = False  # Reset if pattern not met
+                    except IndexError:
+                        is_other_dr_cluster_detail = False
+
+                if is_other_dr_viz or is_other_dr_cluster_detail:
+                    file_path = os.path.join(folder_path, filename)
+                    try:
+                        with open(file_path, "rb") as img_file:
+                            base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                            images_data.append({
+                                "title": generate_clustering_title(filename_no_ext, decade, gender,
+                                                                   dr_method_selected=dr_method),
+                                "base64": base64_str,
+                                "filename": filename
+                            })
+                    except Exception as e:
+                        print(f"Error processing Other DR file {filename}: {e}")
+
+        if not images_data:
+            return Response({'error': f'No {dr_method.upper()} based clustering images found for selected filters.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        return Response({"images": images_data}, status=status.HTTP_200_OK)
