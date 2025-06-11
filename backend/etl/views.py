@@ -1,3 +1,5 @@
+from django.db import connection  # For raw SQL queries
+
 import ast
 import base64
 import gc
@@ -614,56 +616,197 @@ def generate_clustering_title(filename_no_ext, decade, gender, dr_method_selecte
     return f"Analysis: {filename_no_ext.replace('_', ' ')} - {base_info}"  # Generic fallback
 
 
+# class CuratedClusteringInformation(APIView):
+#     def get(self, request):
+#         decade = request.query_params.get('decade', None)
+#         gender = request.query_params.get('gender', None)
+#         clustering_method = request.query_params.get('clustering_method', None)
+#         dr_method = request.query_params.get('dr_method', None)
+#
+#         supported_clustering_methods = ["KMeans", "AffinityPropagation", "Agglomerative", "DBSCAN", "HDBSCAN", "GaussianMixture", "SpectralClustering"]
+#         supported_curated_dr_methods = ['tsne', 'umap', 'lle', 'isomap']
+#
+#         folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+#         if not os.path.exists(folder_path):
+#             return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+#
+#         images_data = []
+#         prefix = f"{decade}_{gender}_"
+#
+#         print(clustering_method)
+#         print(dr_method)
+#
+#         # f'{decade}_{gender}_violin_plots_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+#         # f'{decade}_{gender}_avg_categories_piecharts_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+#         # f'{decade}_{gender}_notes_histogram_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+#
+#         for filename in sorted(os.listdir(folder_path)):
+#             if filename.startswith(prefix) and filename.endswith(".png"):
+#                 filename_no_ext = os.path.splitext(filename)[0]
+#
+#                 is_violin = "violin_plots_curated_cluster" in filename_no_ext
+#                 is_avg_cat_pie = "avg_categories_piecharts_curated_cluster" in filename_no_ext
+#                 is_notes_histograms = "notes_histogram_curated_cluster" in filename_no_ext
+#
+#                 if ((is_violin or is_avg_cat_pie or is_notes_histograms)
+#                         and clustering_method in filename_no_ext and dr_method in filename_no_ext):
+#                     file_path = os.path.join(folder_path, filename)
+#
+#                     try:
+#                         with open(file_path, "rb") as img_file:
+#                             base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+#                             images_data.append({
+#                                 "base64": base64_str,
+#                                 "filename": filename  # Keep for debugging or potential future use
+#                             })
+#                     except Exception as e:
+#                         print(f"Error processing PCA file {filename}: {e}")
+#
+#         if not images_data:
+#             return Response({'error': 'No images found for given curated clustering algorithm and dr method'},
+#                             status=status.HTTP_404_NOT_FOUND)
+#         return Response({"images": images_data}, status=status.HTTP_200_OK)
+
+
+def get_image_data_with_title(folder_path, filename, title):
+    """Helper to read, base64 encode an image, and return its data with a title."""
+    file_path = os.path.join(folder_path, filename)
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "rb") as img_file:
+                base64_str = base64.b64encode(img_file.read()).decode('utf-8')
+                return {
+                    "base64": base64_str,
+                    "filename": filename,
+                    "title": title
+                }
+        except Exception as e:
+            print(f"Error processing image file {filename}: {e}")
+    return None
+
+
 class CuratedClusteringInformation(APIView):
     def get(self, request):
         decade = request.query_params.get('decade', None)
         gender = request.query_params.get('gender', None)
-        clustering_method = request.query_params.get('clustering_method', None)
-        dr_method = request.query_params.get('dr_method', None)
+        clustering_method_param = request.query_params.get('clustering_method', None)  # e.g., "KMeans"
+        dr_method_param = request.query_params.get('dr_method', None)  # e.g., "umap"
 
-        supported_clustering_methods = ["KMeans", "AffinityPropagation", "Agglomerative", "DBSCAN", "HDBSCAN", "GaussianMixture", "SpectralClustering"]
-        supported_curated_dr_methods = ['tsne', 'umap', 'lle', 'isomap']
+        if not all([decade, gender, clustering_method_param, dr_method_param]):
+            return Response(
+                {'error': 'Missing required query parameters (decade, gender, clustering_method, dr_method)'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")  # Or your actual image folder
         if not os.path.exists(folder_path):
-            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Image uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        images_data = []
         prefix = f"{decade}_{gender}_"
+        overview_visualization_data = None
+        clusters_display_data = []
 
-        print(clustering_method)
-        print(dr_method)
 
-        # f'{decade}_{gender}_violin_plots_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
-        # f'{decade}_{gender}_avg_categories_piecharts_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
-        # f'{decade}_{gender}_notes_histogram_curated_cluster{label}_{curated_result_dr}_{curated_result_algo}.png'
+        overview_filename = f"{prefix}{dr_method_param}_curated_2D_all_clustering_algos.png"
+        overview_title = (f"{decade} {gender} - All Clustering Algorithms (PCA-based) "
+                          f"Visualized by {dr_method_param.upper()}")
 
-        for filename in sorted(os.listdir(folder_path)):
-            if filename.startswith(prefix) and filename.endswith(".png"):
-                filename_no_ext = os.path.splitext(filename)[0]
+        overview_visualization_data = get_image_data_with_title(folder_path, overview_filename, overview_title)
 
-                is_violin = "violin_plots_curated_cluster" in filename_no_ext
-                is_avg_cat_pie = "avg_categories_piecharts_curated_cluster" in filename_no_ext
-                is_notes_histograms = "notes_histogram_curated_cluster" in filename_no_ext
+        unique_cluster_labels = []
+        try:
+            with connection.cursor() as cursor:
+                # Query for cluster labels for the specific clustering algorithm
+                # The reduction method for curated choices in etl_clusters is 'pca'
+                cursor.execute("""
+                    SELECT DISTINCT cluster
+                    FROM etl_clusters
+                    WHERE decade = %s AND gender = %s AND curated = TRUE
+                      AND reduction = 'pca' AND clusterization = %s
+                    ORDER BY cluster;
+                """, [decade, gender, clustering_method_param])
+                rows = cursor.fetchall()
+                unique_cluster_labels = [row[0] for row in rows if
+                                         row[0] is not None and row[0] != -1]  # Exclude noise if labeled as -1
+        except Exception as e:
+            print(f"Database error fetching cluster labels: {e}")
+            return Response({'error': 'Failed to fetch cluster labels from database.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                if ((is_violin or is_avg_cat_pie or is_notes_histograms)
-                        and clustering_method in filename_no_ext and dr_method in filename_no_ext):
-                    file_path = os.path.join(folder_path, filename)
+        # For each cluster, fetch its specific images and perfumes
+        for cluster_label in unique_cluster_labels:
+            cluster_images = []
+            cluster_perfumes = []
 
-                    try:
-                        with open(file_path, "rb") as img_file:
-                            base64_str = base64.b64encode(img_file.read()).decode('utf-8')
-                            images_data.append({
-                                "base64": base64_str,
-                                "filename": filename  # Keep for debugging or potential future use
+            # TODO: IT SHOULD NOT BE PCA BY DEFAULT
+            # curated is pca, the _pca_ should actually be the dr_method chosen by the user
+            # right now it works, because I messed up the image names in airflow... cool
+
+            # Violin Plot
+            violin_filename = f"{prefix}violin_plots_curated_cluster{cluster_label}_pca_{clustering_method_param}.png"
+            violin_title = f"Cluster {cluster_label} - Ratings Distribution"
+            img_data = get_image_data_with_title(folder_path, violin_filename, violin_title)
+            if img_data: cluster_images.append(img_data)
+
+            # Category Pie Chart
+            pie_filename = f"{prefix}avg_categories_piecharts_curated_cluster{cluster_label}_pca_{clustering_method_param}.png"
+            pie_title = f"Cluster {cluster_label} - Average Category Composition"
+            img_data = get_image_data_with_title(folder_path, pie_filename, pie_title)
+            if img_data: cluster_images.append(img_data)
+
+            # Notes Histogram
+            histo_filename = f"{prefix}notes_histogram_curated_cluster{cluster_label}_pca_{clustering_method_param}.png"
+            histo_title = f"Cluster {cluster_label} - Top Notes"
+            img_data = get_image_data_with_title(folder_path, histo_filename, histo_title)
+            if img_data: cluster_images.append(img_data)
+
+            try:
+                with connection.cursor() as cursor:
+                    # Get links from etl_clusters
+                    cursor.execute("""
+                        SELECT link
+                        FROM etl_clusters
+                        WHERE decade = %s AND gender = %s AND curated = TRUE
+                          AND reduction = 'pca' AND clusterization = %s AND cluster = %s;
+                    """, [decade, gender, clustering_method_param, cluster_label])
+                    perfume_links_rows = cursor.fetchall()
+                    perfume_links = [row[0] for row in perfume_links_rows]
+
+                    if perfume_links:
+                        # Ensure the 'image' field provides a full URL or is handled by MEDIA_URL settings if it's a relative path
+                        placeholders = ','.join(['%s'] * len(perfume_links))
+                        query = f"""
+                            SELECT link, name, image, description 
+                            FROM etl_perfume 
+                            WHERE link IN ({placeholders});
+                        """
+                        cursor.execute(query, perfume_links)
+                        perfumes_details_rows = cursor.fetchall()
+                        for row in perfumes_details_rows:
+                            cluster_perfumes.append({
+                                "link": row[0],
+                                "name": row[1],
+                                "image": row[2],
+                                "description": row[3]
                             })
-                    except Exception as e:
-                        print(f"Error processing PCA file {filename}: {e}")
+            except Exception as e:
+                print(f"Database error fetching perfumes for cluster {cluster_label}: {e}")
+                # Continue processing other clusters, but this one might have no perfumes listed
 
-        if not images_data:
-            return Response({'error': 'No images found for given curated clustering algorithm and dr method'},
+            if cluster_images or cluster_perfumes:  # Add cluster only if it has images or perfumes
+                clusters_display_data.append({
+                    "clusterLabel": str(cluster_label),
+                    "images": cluster_images,
+                    "perfumes": cluster_perfumes
+                })
+
+        if not overview_visualization_data and not clusters_display_data:
+            return Response({'error': 'No overview visualization or cluster data found for the selected criteria.'},
                             status=status.HTTP_404_NOT_FOUND)
-        return Response({"images": images_data}, status=status.HTTP_200_OK)
+
+        return Response({
+            "overviewVisualization": overview_visualization_data,
+            "clustersData": clusters_display_data
+        }, status=status.HTTP_200_OK)
 
 class ClusteringPcaAnalysis(APIView):
     def get(self, request):
