@@ -70,8 +70,11 @@ airflow.db
 dags/__pycache__/
 logs/
 
+coolify.docker-compose.yaml
+
 # Docker related files
 docker-compose.override.yml
+db.sqlite3
 
 .terraform/
 *.tfstate
