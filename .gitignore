@@ -72,3 +72,9 @@ logs/
 
 # Docker related files
 docker-compose.override.yml
+
+.terraform/
+*.tfstate
+*.tfstate.backup
+tfplan*
+*.tfvars
