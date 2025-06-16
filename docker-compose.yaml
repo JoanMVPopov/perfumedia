@@ -92,10 +92,11 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: production.Dockerfile
-      args:
-        VUE_APP_API_URL: ${VUE_APP_API_URL}
-      target: production-stage
+      dockerfile: Dockerfile
+#      dockerfile: production.Dockerfile
+#      args:
+#        VUE_APP_API_URL: ${VUE_APP_API_URL}
+#      target: production-stage
     deploy:
       resources:
         limits:
@@ -110,8 +111,8 @@ services:
     volumes:
       - ./frontend:/app/frontend
     ports:
-#      - "3000:8080"
-      - "3000:80"
+      - "3000:8080"
+#      - "3000:80"
     depends_on:
       - backend
     networks:
