@@ -76,6 +76,8 @@ coolify.docker-compose.yaml
 docker-compose.override.yml
 db.sqlite3
 
+prod.env
+
 .terraform/
 *.tfstate
 *.tfstate.backup
