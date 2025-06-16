@@ -1,3 +1,5 @@
+version: "3.8"
+
 # & symbol is used to define an anchor, which allows you to reuse a block of configuration
 # across multiple sections. This is useful when you have shared configurations
 # across different services, as it avoids repeating the same settings
