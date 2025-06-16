@@ -82,7 +82,7 @@ services:
       - ./backend:/app/backend
       - media:/app/backend/media
     ports:
-      - "8000:8000"
+      - "8082:8000"
     depends_on:
       - postgres
       - redis
