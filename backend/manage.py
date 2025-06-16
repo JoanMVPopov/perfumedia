@@ -3,7 +3,7 @@
 import os
 import sys
 
-from backend.etl.utils.ModelSingleton import Model
+from etl.utils.ModelSingleton import Model
 
 def main():
     """Run administrative tasks."""

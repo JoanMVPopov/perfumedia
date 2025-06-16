@@ -32,21 +32,23 @@
           <div class="flex flex-wrap gap-x-4 gap-y-4 items-end">
             <div class="flex flex-col w-full sm:w-32">
               <label for="pcaDecade" class="text-sm font-medium">Decade</label>
-              <select v-model="filters.pcaAnalysis.decade" id="pcaDecade" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
+              <v-select
+                id="pcaDecade"
+                :options="availableDecades"
+                v-model="filters.pcaAnalysis.decade"
+                class="mt-1 bg-white"
+                :clearable="false"
+              />
             </div>
             <div class="flex flex-col w-full sm:w-32">
               <label for="pcaGender" class="text-sm font-medium">Gender</label>
-              <select v-model="filters.pcaAnalysis.gender" id="pcaGender" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+              <v-select
+                id="pcaGender"
+                :options="availableGenders"
+                v-model="filters.pcaAnalysis.gender"
+                class="mt-1 bg-white"
+                :clearable="false"
+              />
             </div>
             <div>
               <button @click="fetchPcaAnalysis" :disabled="loadingPcaOverview" class="bg-[#C96868] text-white py-2 px-4 rounded-md hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]">
@@ -59,7 +61,7 @@
             {{ errorPcaOverview }}
           </p>
           <!-- Display Area for PCA Overview Images -->
-          <div v-if="images.pcaOverview.length > 0" class="mt-6 flex justify-center items-start">
+          <div v-if="images.pcaOverview.length > 0" class="mt-6 flex justify-center h-96 overflow-y-auto items-start">
             <ul class="space-y-8 w-full max-w-4xl">
               <li v-for="(group, groupIndex) in images.pcaOverview" :key="'pca-overview-' + group.filename + '-' + groupIndex" class="border-b pb-6 mb-6">
                 <h3 class="text-lg font-semibold mb-3 text-center">{{ group.title }}</h3>
@@ -67,18 +69,18 @@
                   <div class="flex-shrink-0 max-w-[70%]">
                     <img :src="'data:image/png;base64,' + group.base64" :alt="group.title" class="w-full h-auto rounded-md shadow-md object-contain"/>
                   </div>
-                  <div class="relative pl-2 transition-all duration-1000" :class="[expandedIndicesPcaOverview.includes(groupIndex) ? 'w-80' : 'w-24']">
-                    <div class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"
-                         @click="toggleExplanation(groupIndex, expandedIndicesPcaOverview, displayedTextPcaOverview, textToDisplayPca.overview, images.pcaOverview)">
-                      {{ expandedIndicesPcaOverview.includes(groupIndex) ? 'Hide Info' : 'More Info' }}
-                    </div>
-                    <transition name="fade">
-                      <div v-if="expandedIndicesPcaOverview.includes(groupIndex)" class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">
-                        <h4 class="font-bold mb-2">Explanation</h4>
-                        <p class="text-sm whitespace-pre-wrap">{{ displayedTextPcaOverview[groupIndex] }}</p>
-                      </div>
-                    </transition>
-                  </div>
+<!--                  <div class="relative pl-2 transition-all duration-1000" :class="[expandedIndicesPcaOverview.includes(groupIndex) ? 'w-80' : 'w-24']">-->
+<!--                    <div class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"-->
+<!--                         @click="toggleExplanation(groupIndex, expandedIndicesPcaOverview, displayedTextPcaOverview, textToDisplayPca.overview, images.pcaOverview)">-->
+<!--                      {{ expandedIndicesPcaOverview.includes(groupIndex) ? 'Hide Info' : 'More Info' }}-->
+<!--                    </div>-->
+<!--                    <transition name="fade">-->
+<!--                      <div v-if="expandedIndicesPcaOverview.includes(groupIndex)" class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">-->
+<!--                        <h4 class="font-bold mb-2">Explanation</h4>-->
+<!--                        <p class="text-sm whitespace-pre-wrap">{{ displayedTextPcaOverview[groupIndex] }}</p>-->
+<!--                      </div>-->
+<!--                    </transition>-->
+<!--                  </div>-->
                 </div>
               </li>
             </ul>
@@ -100,21 +102,23 @@
             <div class="flex flex-wrap gap-x-4 gap-y-4 items-end mb-6">
                 <div class="flex flex-col w-full sm:w-32">
                   <label for="pcaAdditionalDecade" class="text-sm font-medium">Decade</label>
-                  <select v-model="filters.pcaAdditionalAnalysis.decade" id="pcaAdditionalDecade" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                    <option value="All">All</option>
-                    <option value="1990">1990s</option>
-                    <option value="2000">2000s</option>
-                    <option value="2010">2010s</option>
-                    <option value="2020">2020s</option>
-                  </select>
+                  <v-select
+                    id="pcaAdditionalDecade"
+                    :options="availableDecades"
+                    v-model="filters.pcaAdditionalAnalysis.decade"
+                    class="mt-1 bg-white"
+                    :clearable="false"
+                  />
                 </div>
                 <div class="flex flex-col w-full sm:w-32">
                   <label for="pcaAdditionalGender" class="text-sm font-medium">Gender</label>
-                  <select v-model="filters.pcaAdditionalAnalysis.gender" id="pcaAdditionalGender" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                    <option value="All">All</option>
-                    <option value="Masculine">Masculine</option>
-                    <option value="Feminine">Feminine</option>
-                  </select>
+                  <v-select
+                    id="pcaAdditionalGender"
+                    :options="availableGenders"
+                    v-model="filters.pcaAdditionalAnalysis.gender"
+                    class="mt-1 bg-white"
+                    :clearable="false"
+                  />
                 </div>
                 <div class="flex flex-col w-full sm:w-60">
                     <label for="curatedClusteringMethod" class="text-sm font-medium">Clustering Algorithm</label>
@@ -147,18 +151,18 @@
                                 <div class="flex-shrink-0 w-full h-full">
                                     <img :src="'data:image/png;base64,' + curatedOverviewVisualization.base64" :alt="curatedOverviewVisualization.title || 'Overall Visualization'" class="w-full h-auto rounded-md shadow-md object-contain"/>
                                 </div>
-                                <div class="relative pl-2 transition-all duration-1000" :class="[expandedCuratedOverviewViz ? 'w-80' : 'w-24']">
-                                    <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"
-                                         @click="toggleCuratedOverviewExplanation()">
-                                        {{ expandedCuratedOverviewViz ? 'Hide Info' : 'More Info' }}
-                                    </div>
-                                    <transition name="fade">
-                                        <div v-if="expandedCuratedOverviewViz" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">
-                                            <h4 class="font-bold mb-2">Explanation</h4>
-                                            <p class="text-sm whitespace-pre-wrap">{{ textCuratedOverviewViz }}</p>
-                                        </div>
-                                    </transition>
-                                </div>
+<!--                                <div class="relative pl-2 transition-all duration-1000" :class="[expandedCuratedOverviewViz ? 'w-80' : 'w-24']">-->
+<!--                                    <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"-->
+<!--                                         @click="toggleCuratedOverviewExplanation()">-->
+<!--                                        {{ expandedCuratedOverviewViz ? 'Hide Info' : 'More Info' }}-->
+<!--                                    </div>-->
+<!--                                    <transition name="fade">-->
+<!--                                        <div v-if="expandedCuratedOverviewViz" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">-->
+<!--                                            <h4 class="font-bold mb-2">Explanation</h4>-->
+<!--                                            <p class="text-sm whitespace-pre-wrap">{{ textCuratedOverviewViz }}</p>-->
+<!--                                        </div>-->
+<!--                                    </transition>-->
+<!--                                </div>-->
                             </div>
                         </div>
                     </div>
@@ -179,18 +183,18 @@
                                                     <div class="flex-shrink-0 max-w-[70%]">
                                                         <img :src="'data:image/png;base64,' + imageItem.base64" :alt="imageItem.title" class="w-full h-auto rounded-md shadow-md object-contain"/>
                                                     </div>
-                                                    <div class="relative pl-2 transition-all duration-1000" :class="[isCuratedImageExpanded(slideIndex, imageIndex) ? 'w-80' : 'w-24']">
-                                                        <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"
-                                                            @click="toggleCuratedItemExplanation(slideIndex, imageIndex, imageItem.title)">
-                                                            {{ isCuratedImageExpanded(slideIndex, imageIndex) ? 'Hide Info' : 'More Info' }}
-                                                        </div>
-                                                        <transition name="fade">
-                                                            <div v-if="isCuratedImageExpanded(slideIndex, imageIndex)" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-80 overflow-y-auto">
-                                                                <h6 class="font-bold mb-1">Explanation</h6>
-                                                                <p class="text-xs whitespace-pre-wrap">{{ getCuratedImageText(slideIndex, imageIndex) }}</p>
-                                                            </div>
-                                                        </transition>
-                                                    </div>
+<!--                                                    <div class="relative pl-2 transition-all duration-1000" :class="[isCuratedImageExpanded(slideIndex, imageIndex) ? 'w-80' : 'w-24']">-->
+<!--                                                        <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"-->
+<!--                                                            @click="toggleCuratedItemExplanation(slideIndex, imageIndex, imageItem.title)">-->
+<!--                                                            {{ isCuratedImageExpanded(slideIndex, imageIndex) ? 'Hide Info' : 'More Info' }}-->
+<!--                                                        </div>-->
+<!--                                                        <transition name="fade">-->
+<!--                                                            <div v-if="isCuratedImageExpanded(slideIndex, imageIndex)" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-80 overflow-y-auto">-->
+<!--                                                                <h6 class="font-bold mb-1">Explanation</h6>-->
+<!--                                                                <p class="text-xs whitespace-pre-wrap">{{ getCuratedImageText(slideIndex, imageIndex) }}</p>-->
+<!--                                                            </div>-->
+<!--                                                        </transition>-->
+<!--                                                    </div>-->
                                                 </div>
                                             </li>
                                         </ul>
@@ -246,76 +250,180 @@
 
       <!-- ~~~~~ SECTION II: OTHER DIMENSIONALITY REDUCTION TECHNIQUES ~~~~~ -->
       <section id="other-dr-analysis" class="mb-12 scroll-mt-20">
-         <h1 class="text-2xl font-bold mb-4">II. Other Dimensionality Reduction Techniques (2D Direct)</h1>
-         <p class="text-sm mb-4 text-gray-600">
-          This section explores clustering results when dimensionality reduction (DR) techniques are applied to reduce data directly to 2D.
-          Various clustering algorithms are then run on this 2D data.
-          The 2D DR plot with cluster labels is shown, along with detailed characteristics for each significant cluster.
+        <h1 class="text-2xl font-bold mb-4">II. Other Dimensionality Reduction Techniques (2D Direct)</h1>
+        <p class="text-sm mb-4 text-gray-600">
+        This section explores clustering results when dimensionality reduction (DR) techniques are applied to reduce data directly to 2D.
+        Various clustering algorithms are then run on this 2D data.
+        The 2D DR plot with cluster labels is shown, along with detailed characteristics for each significant cluster.
+        Note: the current version of the platform supports UMAP direct reduction only, as the results of other DR methods might not be suitable for clusterization. Although the use of UMAP is also a bit unorthodox in such pipelines, there is some research that backs up this approach.<sup class="text-xs">[1,2]</sup>
         </p>
-        <div class="mb-6 flex flex-col items-start">
+
+        <!-- References section -->
+        <div class="mt-6 pt-4 border-t border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">References</h4>
+          <div class="text-xs text-gray-600 space-y-1">
+            <p>[1] Considerably Improving Clustering Algorithms Using UMAP Dimensionality Reduction Technique: A Comparative Study. ResearchGate.
+               <a href="https://www.researchgate.net/publication/340388772_Considerably_Improving_Clustering_Algorithms_Using_UMAP_Dimensionality_Reduction_Technique_A_Comparative_Study"
+                  class="text-blue-600 hover:text-blue-800 underline break-all"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                 https://www.researchgate.net/publication/340388772_Considerably_Improving_Clustering_Algorithms_Using_UMAP_Dimensionality_Reduction_Technique_A_Comparative_Study
+               </a>
+            </p>
+            <p>[2] UMAP Documentation - Clustering.
+               <a href="https://umap-learn.readthedocs.io/en/latest/clustering.html"
+                  class="text-blue-600 hover:text-blue-800 underline"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                 https://umap-learn.readthedocs.io/en/latest/clustering.html
+               </a>
+            </p>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 mb-6 flex flex-col border-t items-start">
           <h2 class="text-xl font-semibold mb-4">Select Filters</h2>
           <div class="flex flex-wrap gap-x-4 gap-y-4 items-end">
             <div class="flex flex-col w-full sm:w-32">
               <label for="otherDrDecade" class="text-sm font-medium">Decade</label>
-              <select v-model="filters.otherDrAnalysis.decade" id="otherDrDecade" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                <option value="All">All</option>
-                <option value="1990">1990s</option>
-                <option value="2000">2000s</option>
-                <option value="2010">2010s</option>
-                <option value="2020">2020s</option>
-              </select>
+              <v-select
+                id="otherDrDecade"
+                :options="availableDecades"
+                v-model="filters.otherDrAnalysis.decade"
+                class="mt-1 bg-white"
+                :clearable="false"
+              />
             </div>
             <div class="flex flex-col w-full sm:w-32">
               <label for="otherDrGender" class="text-sm font-medium">Gender</label>
-              <select v-model="filters.otherDrAnalysis.gender" id="otherDrGender" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                <option value="All">All</option>
-                <option value="Masculine">Masculine</option>
-                <option value="Feminine">Feminine</option>
-              </select>
+              <v-select
+                id="otherDrGender"
+                :options="availableGenders"
+                v-model="filters.otherDrAnalysis.gender"
+                class="mt-1 bg-white"
+                :clearable="false"
+              />
             </div>
-            <div class="flex flex-col w-full sm:w-40">
-              <label for="otherDrMethod" class="text-sm font-medium">DR Method</label>
-              <select v-model="filters.otherDrAnalysis.drMethod" id="otherDrMethod" class="mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                <option v-for="method in drMethods" :key="method.value" :value="method.value">
-                  {{ method.name }}
-                </option>
-              </select>
+            <div class="flex flex-col w-full sm:w-60">
+                    <label for="allClusteringMethod" class="text-sm font-medium">Clustering Algorithm</label>
+                    <v-select id="allClusteringMethod" :options="availableCuratedClusteringMethods" v-model="selectedAllClusteringMethod" placeholder="Select Algorithm" class="mt-1 bg-white" :clearable="false"></v-select>
+            </div>
+            <div class="flex flex-col w-full sm:w-60">
+                    <label for="allDrMethod" class="text-sm font-medium">DR Method</label>
+                    <v-select id="allDrMethod" :options="availableOtherDrMethods" v-model="selectedAllDrMethod" placeholder="Select DR Method" class="mt-1 bg-white" :clearable="false"></v-select>
             </div>
             <div>
-              <button @click="fetchOtherDrAnalysis" :disabled="loadingOtherDr" class="bg-[#C96868] text-white py-2 px-4 rounded-md hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]">
+              <button @click="fetchOtherDrAnalysis" :disabled="loadingOtherDr || !selectedAllClusteringMethod || !selectedAllDrMethod" class="bg-[#C96868] text-white py-2 px-4 rounded-md hover:bg-[#C45A5A] focus:outline-none focus:ring-2 focus:ring-[#FADFA1]">
                 {{ loadingOtherDr ? "Loading..." : "Get " + selectedDrMethodDisplay + " Analysis" }}
               </button>
             </div>
           </div>
         </div>
         <p v-if="errorOtherDr" class="mt-4 text-red-600 font-medium text-center">{{ errorOtherDr }}</p>
-        <div v-if="images.otherDrAnalysis.length > 0" class="mt-6 flex justify-center items-start">
-          <ul class="space-y-8 w-full max-w-4xl">
-            <li v-for="(group, groupIndex) in images.otherDrAnalysis" :key="'otherdr-group-' + group.filename + '-' + groupIndex" class="border-b pb-6 mb-6">
-              <h3 class="text-lg font-semibold mb-3 text-center">{{ group.title }}</h3>
-              <div class="relative flex justify-center items-stretch">
-                <div class="flex-shrink-0 max-w-[70%]">
-                  <img :src="'data:image/png;base64,' + group.base64" :alt="group.title" class="w-full h-auto rounded-md shadow-md object-contain"/>
-                </div>
-                <div class="relative pl-2 transition-all duration-1000" :class="[expandedIndicesOtherDr.includes(groupIndex) ? 'w-80' : 'w-24']">
-                  <div class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"
-                       @click="toggleExplanation(groupIndex, expandedIndicesOtherDr, displayedTextOtherDr, textToDisplayOtherDr, images.otherDrAnalysis)">
-                    {{ expandedIndicesOtherDr.includes(groupIndex) ? 'Hide Info' : 'More Info' }}
+        <!-- SCROLLABLE CONTENT AREA -->
+        <div class="relative part2-outer-wrapper">
+          <div class="part2-scrollable-content" style="max-height: 80vh; overflow-y: auto; padding: 0 15px;">
+              <!-- Overall 2D Visualization -->
+              <div v-if="otherDrOverviewVisualization" class="mb-8 flex justify-center items-start pt-4">
+                  <div class="w-full max-w-3xl mx-auto">
+                      <h3 class="text-lg font-semibold mb-3 text-center">{{ otherDrOverviewVisualization.title || 'Overall Cluster Visualization' }}</h3>
+                      <div class="relative flex justify-center items-stretch">
+                          <div class="flex-shrink-0 w-full h-full">
+                              <img :src="'data:image/png;base64,' + otherDrOverviewVisualization.base64" :alt="otherDrOverviewVisualization.title || 'Overall Visualization'" class="w-full h-auto rounded-md shadow-md object-contain"/>
+                          </div>
+  <!--                        <div class="relative pl-2 transition-all duration-1000" :class="[expandedOtherDrOverviewViz ? 'w-80' : 'w-24']">-->
+  <!--                            <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"-->
+  <!--                                 @click="toggleOtherDrOverviewExplanation()">-->
+  <!--                                {{ expandedOtherDrOverviewViz ? 'Hide Info' : 'More Info' }}-->
+  <!--                            </div>-->
+  <!--                            <transition name="fade">-->
+  <!--                                <div v-if="expandedOtherDrOverviewViz" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">-->
+  <!--                                    <h4 class="font-bold mb-2">Explanation</h4>-->
+  <!--                                    <p class="text-sm whitespace-pre-wrap">{{ textOtherDrOverviewViz }}</p>-->
+  <!--                                </div>-->
+  <!--                            </transition>-->
+  <!--                        </div>-->
+                      </div>
                   </div>
-                  <transition name="fade">
-                    <div v-if="expandedIndicesOtherDr.includes(groupIndex)" class="sticky top-32 z-10 bg-white p-4 shadow-md rounded mt-2 max-h-96 overflow-y-auto">
-                      <h4 class="font-bold mb-2">Explanation</h4>
-                      <p class="text-sm whitespace-pre-wrap">{{ displayedTextOtherDr[groupIndex] }}</p>
-                    </div>
-                  </transition>
-                </div>
               </div>
-            </li>
-          </ul>
+
+              <!-- Carousel for Individual Clusters -->
+              <div v-if="otherDrClustersDisplayData.length > 0" class="w-full max-w-3xl mx-auto">
+                  <Carousel ref="otherDrCarouselRef" v-bind="carouselConfigOtherDr" @slide-end="onOtherDrCarouselSlideEnd">
+                      <Slide v-for="(cluster, slideIndex) in otherDrClustersDisplayData" :key="'otherdr-slide-' + cluster.clusterLabel + '-' + slideIndex">
+                          <div class="p-4 w-full">
+                              <h3 class="text-xl font-bold mb-4 text-center">Cluster {{ cluster.clusterLabel }} Details</h3>
+                              <!-- Cluster Specific Images -->
+                              <div class="mb-6">
+                                  <h4 class="text-lg font-semibold mb-3 text-center">Cluster Visualizations</h4>
+                                  <ul class="space-y-8">
+                                      <li v-for="(imageItem, imageIndex) in cluster.images" :key="'otherdr-clusterimg-' + slideIndex + '-' + imageIndex" class="border-b pb-6 mb-6">
+                                          <h5 class="text-md font-semibold mb-2 text-center">{{ imageItem.title || 'Cluster Image' }}</h5>
+                                          <div class="relative flex justify-center items-stretch">
+                                              <div class="flex-shrink-0 max-w-[70%]">
+                                                  <img :src="'data:image/png;base64,' + imageItem.base64" :alt="imageItem.title" class="w-full h-auto rounded-md shadow-md object-contain"/>
+                                              </div>
+  <!--                                            <div class="relative pl-2 transition-all duration-1000" :class="[isOtherDrImageExpanded(slideIndex, imageIndex) ? 'w-80' : 'w-24']">-->
+  <!--                                                <div class="sticky top-4 z-20 w-24 h-10 bg-[#C96868] text-white font-bold text-sm rounded shadow-sm flex items-center justify-center cursor-pointer select-none"-->
+  <!--                                                    @click="toggleOtherDrItemExplanation(slideIndex, imageIndex, imageItem.title)">-->
+  <!--                                                    {{ isOtherDrImageExpanded(slideIndex, imageIndex) ? 'Hide Info' : 'More Info' }}-->
+  <!--                                                </div>-->
+  <!--                                                <transition name="fade">-->
+  <!--                                                    <div v-if="isOtherDrImageExpanded(slideIndex, imageIndex)" class="sticky top-16 z-20 bg-white p-4 shadow-md rounded mt-2 max-h-80 overflow-y-auto">-->
+  <!--                                                        <h6 class="font-bold mb-1">Explanation</h6>-->
+  <!--                                                        <p class="text-xs whitespace-pre-wrap">{{ getOtherDrImageText(slideIndex, imageIndex) }}</p>-->
+  <!--                                                    </div>-->
+  <!--                                                </transition>-->
+  <!--                                            </div>-->
+                                          </div>
+                                      </li>
+                                  </ul>
+                              </div>
+                              <!-- Perfumes in Cluster -->
+                              <div>
+                                  <h4 class="text-lg font-semibold mb-3 text-center">Perfumes in this Cluster ({{ cluster.perfumes.length }})</h4>
+                                  <div v-if="cluster.perfumes.length > 0"
+                                       class="perfumes-scroll-container bg-gray-50 p-2 rounded-md"
+                                       style="max-height: 400px; overflow-y: auto;">
+                                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          <a v-for="(perfume, pIndex) in cluster.perfumes" :key="'otherdr-cluster-' + cluster.clusterLabel + '-perfume-' + pIndex"
+                                             :href="perfume.link" target="_blank" class="block bg-white shadow rounded p-4 hover:shadow-lg transition-shadow">
+                                              <img v-if="perfume.image" :src="perfume.image" alt="Perfume" class="w-full h-48 object-cover rounded-t-md mb-2"/>
+                                              <div v-else class="w-full h-48 bg-gray-200 rounded-t-md mb-2 flex items-center justify-center text-gray-400">No Image</div>
+                                              <h5 class="font-semibold text-md mb-1 truncate" :title="perfume.name">{{ perfume.name || 'Perfume Details' }}</h5>
+                                              <p class="text-gray-600 text-xs_NO_FONT_SIZES_HERE mb-2 h-16 overflow-y-auto">{{ perfume.description || 'No description available.' }}</p>
+                                              <span class="text-xs text-blue-500 hover:underline">View Product</span>
+                                          </a>
+                                      </div>
+                                  </div>
+                                  <p v-else class="text-gray-500 text-center">No perfumes listed for this cluster.</p>
+                              </div>
+                          </div>
+                      </Slide>
+                      <template #addons>
+                          <Pagination />
+                      </template>
+                  </Carousel>
+              </div>
+          </div>
+
+          <!-- Custom Navigation Buttons - OUTSIDE the scrollable area, INSIDE the relative wrapper -->
+          <template v-if="otherDrClustersDisplayData.length > 1">
+              <button @click="otherDrCarouselPrev"
+                      class="custom-side-nav custom-side-nav-prev"
+                      title="Previous Cluster" aria-label="View Previous Cluster">
+                  &lt;
+              </button>
+              <button @click="otherDrCarouselNext"
+                      class="custom-side-nav custom-side-nav-next"
+                      title="Next Cluster" aria-label="View Next Cluster">
+                  &gt;
+              </button>
+          </template>
         </div>
-        <p v-else-if="!loadingOtherDr && attemptedFetchOtherDr" class="mt-6 text-gray-500 text-center">
+        <p v-if="!loadingOtherDr && attemptedFetchOtherDr && !otherDrOverviewVisualization" class="mt-6 text-gray-500 text-center">
             No {{selectedDrMethodDisplay}} analysis images found for the selected filters.
         </p>
+
       </section>
     </div>
   </div>
@@ -361,8 +469,37 @@ export default {
           {label: "LLE", value: "lle"},
           {label: "Isomap", value: "isomap"},
       ],
+      availableOtherDrMethods: [
+          // {label: "t-SNE", value: "tsne"},
+          {label: "UMAP", value: "umap"}
+          // {label: "LLE", value: "lle"},
+          // {label: "Isomap", value: "isomap"},
+      ],
+      availableDecades: [
+        { label: "All", value: "All" },
+        // { label: "1990s", value: "1990" },
+        // { label: "2000s", value: "2000" },
+        // { label: "2010s", value: "2010" },
+        // { label: "2020s", value: "2020" },
+      ],
+      availableGenders: [
+        { label: "All", value: "All" },
+        { label: "Masculine", value: "Masculine" },
+        { label: "Feminine", value: "Feminine" },
+      ],
       selectedCuratedClusteringMethod: null,
+      selectedAllClusteringMethod: null,
+      selectedAllDrMethod: null,
       selectedCuratedDrMethod: null,
+
+      otherDrOverviewVisualization: null,
+      otherDrClustersDisplayData: [],
+
+      expandedOtherDrOverviewViz: false,
+      textOtherDrOverviewViz: "",
+
+      expandedOtherDrItemExplanationState: {},
+      textOtherDrItemExplanationState: {},
 
       loadingPcaOverview: false,
       loadingCuratedDetails: false,
@@ -377,9 +514,9 @@ export default {
       attemptedFetchOtherDr: false,
 
       filters: {
-        pcaAnalysis: { decade: "1990", gender: "Masculine" },
-        pcaAdditionalAnalysis: { decade: "1990", gender: "Masculine" },
-        otherDrAnalysis: { decade: "1990", gender: "Masculine", drMethod: "umap" },
+        pcaAnalysis: { decade: "All", gender: "All" },
+        pcaAdditionalAnalysis: { decade: "All", gender: "All" },
+        otherDrAnalysis: { decade: "All", gender: "All"},
       },
       images: {
         pcaOverview: [],
@@ -438,6 +575,51 @@ export default {
     },
   },
   methods: {
+    // Other DR Overview explanation toggle
+    toggleOtherDrOverviewExplanation() {
+      this.expandedOtherDrOverviewViz = !this.expandedOtherDrOverviewViz;
+      if (this.expandedOtherDrOverviewViz) {
+        const title = this.otherDrOverviewVisualization?.title || 'Overall Cluster Visualization';
+        const explanation = this.getExplanationText(title, this.textToDisplayOtherDr);
+        this.typeTextSimple('textOtherDrOverviewViz', explanation);
+      } else {
+        this.textOtherDrOverviewViz = "";
+      }
+    },
+
+    // Other DR item expansion methods
+    isOtherDrImageExpanded(slideIndex, imageIndex) {
+      const key = `otherdr_${slideIndex}_${imageIndex}`;
+      return !!this.expandedOtherDrItemExplanationState[key];
+    },
+
+    getOtherDrImageText(slideIndex, imageIndex) {
+      const key = `otherdr_${slideIndex}_${imageIndex}`;
+      return this.textOtherDrItemExplanationState[key] || "";
+    },
+
+    toggleOtherDrItemExplanation(slideIndex, imageIndex, imageTitle) {
+      const key = `otherdr_${slideIndex}_${imageIndex}`;
+      const isCurrentlyExpanded = this.isOtherDrImageExpanded(slideIndex, imageIndex);
+      this.expandedOtherDrItemExplanationState[key] = !isCurrentlyExpanded;
+
+      if (!isCurrentlyExpanded) {
+        const explanation = this.getExplanationText(imageTitle, this.textToDisplayOtherDr);
+        this.typeTextWithKey(this.textOtherDrItemExplanationState, key, explanation);
+      } else {
+        this.textOtherDrItemExplanationState[key] = "";
+      }
+    },
+
+    // Other DR carousel navigation
+    otherDrCarouselPrev() {
+      this.$refs.otherDrCarouselRef?.prev();
+    },
+
+    otherDrCarouselNext() {
+      this.$refs.otherDrCarouselRef?.next();
+    },
+
     getExplanationText(imageTitle, textMapForSection) {
         if (!imageTitle || !textMapForSection) return textMapForSection?.DEFAULT || "No explanation available.";
         const titleLower = imageTitle.toLowerCase();
@@ -549,9 +731,6 @@ export default {
     curatedCarouselNext() {
       this.$refs.curatedCarouselRef?.next();
     },
-    onCuratedCarouselSlideEnd() {
-      // Optional: if needed for analytics or other logic
-    },
 
     async fetchPcaAnalysis() {
       this.loadingPcaOverview = true;
@@ -610,27 +789,54 @@ export default {
     },
 
     async fetchOtherDrAnalysis() {
-      this.loadingOtherDr = true;
-      this.errorOtherDr = "";
-      this.attemptedFetchOtherDr = true;
-      this.images.otherDrAnalysis = [];
-      this.expandedIndicesOtherDr = [];
-      this.displayedTextOtherDr = [];
-      try {
-        const response = await apiClient.get("/test/clustering-other-dr-analysis", {
-          params: this.filters.otherDrAnalysis,
-        });
-        this.images.otherDrAnalysis = response.data.images || [];
-        if (this.images.otherDrAnalysis.length > 0) {
-          this.displayedTextOtherDr = Array(this.images.otherDrAnalysis.length).fill("");
-        }
-      } catch (err) {
-        this.errorOtherDr = err.response?.data?.error || `Failed to fetch ${this.selectedDrMethodDisplay} analysis data.`;
-        this.images.otherDrAnalysis = [];
-      } finally {
-        this.loadingOtherDr = false;
+    if (!this.selectedAllClusteringMethod || !this.selectedAllDrMethod) {
+      this.errorOtherDr = "Please select both a clustering algorithm and a visualization DR method.";
+      return;
+    }
+
+    this.loadingOtherDr = true;
+    this.errorOtherDr = "";
+    this.attemptedFetchOtherDr = true;
+    this.images.otherDrAnalysis = [];
+    this.expandedIndicesOtherDr = [];
+    this.displayedTextOtherDr = [];
+
+    // Reset Other DR specific data
+    this.otherDrOverviewVisualization = null;
+    this.otherDrClustersDisplayData = [];
+    this.expandedOtherDrOverviewViz = false;
+    this.textOtherDrOverviewViz = "";
+    this.expandedOtherDrItemExplanationState = {};
+    this.textOtherDrItemExplanationState = {};
+
+    try {
+      const params = {
+        decade: this.filters.otherDrAnalysis.decade,
+        gender: this.filters.otherDrAnalysis.gender,
+        clustering_method: this.selectedAllClusteringMethod.value,
+        dr_method: this.selectedAllDrMethod.value
+      };
+
+      const response = await apiClient.get("/test/clustering-other-dr-analysis", { params });
+
+      // Assuming the API returns similar structure to curated analysis
+      this.otherDrOverviewVisualization = response.data.overviewVisualization || null;
+      this.otherDrClustersDisplayData = response.data.clustersData || [];
+
+      // Keep the old images array for backward compatibility if needed
+      this.images.otherDrAnalysis = response.data.images || [];
+      if (this.images.otherDrAnalysis.length > 0) {
+        this.displayedTextOtherDr = Array(this.images.otherDrAnalysis.length).fill("");
       }
-    },
+    } catch (err) {
+      this.errorOtherDr = err.response?.data?.error || `Failed to fetch ${this.selectedDrMethodDisplay} analysis data.`;
+      this.images.otherDrAnalysis = [];
+      this.otherDrOverviewVisualization = null;
+      this.otherDrClustersDisplayData = [];
+    } finally {
+      this.loadingOtherDr = false;
+    }
+  },
   },
 };
 </script>
@@ -652,6 +858,7 @@ aside {
 }
 
 /* v-select styling */
+/*
 :deep(.vs__dropdown-toggle) {
   border-radius: 0.375rem; border: 1px solid #D1D5DB; padding: 0.375rem 0.75rem; min-height: 2.5rem;
 }
@@ -661,10 +868,12 @@ aside {
 :deep(.vs__actions .vs__clear), :deep(.vs__actions .vs__open-indicator) { fill: #6B7280; transform: scale(0.8); }
 :deep(.vs__dropdown-menu) {
   border-color: #D1D5DB; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-height: 220px;
+  overflow-y: auto;
 }
 :deep(.vs__dropdown-option) { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
 :deep(.vs__dropdown-option--highlight) { background-color: #E0A9A9; color: white; }
-
+*/
 
 /* Part 2: Curated Cluster Details - Outer Wrapper and Scrollable Content */
 .part2-outer-wrapper {
@@ -684,7 +893,7 @@ aside {
   top: 50%;
   transform: translateY(-50%);
   z-index: 30;
-  background-color: rgba(201, 104, 104, 0.8); /* Your theme color */
+  background-color: rgba(201, 104, 104, 0.8);
   color: white;
   border: none;
   border-radius: 50%;

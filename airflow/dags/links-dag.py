@@ -23,8 +23,9 @@ with DAG(
         dag_id="links",
         default_args=default_args,
         description='DAG to scrape 400 links (4*100) up to 5 times',
+        # IMPORTANT
         # schedule_interval='0 */12 * * *',  # every 12 hours
-        schedule_interval='*/10 * * * *',  # every 10 minutes
+        # schedule_interval='*/10 * * * *',  # every 10 minutes
         catchup=False,
         max_active_runs=1,
         max_active_tasks=3
@@ -47,7 +48,7 @@ with DAG(
             return 'handle_rescheduling'
             # return 'placeholder_operator_before_stats'
 
-
+    # IMPORTANT
     def handle_rescheduling():
         # TODO: Need to figure out a default return value
         time_etl_completion = datetime.strptime(Variable.get("time_etl_completion"), "%Y-%m-%d %H:%M:%S")
@@ -63,8 +64,9 @@ with DAG(
 
             current_environment = os.getenv('PIPELINE', 'dev')
 
-            if current_environment == 'production':
-                transmit_data_through_ssh_tunnel()
+            # I needed this for AWS, don't need it anymore
+            # if current_environment == 'production':
+            #     transmit_data_through_ssh_tunnel()
 
             return
         else:

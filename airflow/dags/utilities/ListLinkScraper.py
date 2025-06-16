@@ -40,10 +40,11 @@ class LinkScraper(BaseModel):
 
             items = soup.find_all('div', class_="col-list")
 
-            for item in items:
-            #for item in range(5):
-                #div_name_tag = items[item].find("div", class_="name")
-                div_name_tag = item.find("div", class_="name")
+            # IMPORTANT
+            #for item in items:
+            for item in range(5):
+                div_name_tag = items[item].find("div", class_="name")
+                #div_name_tag = item.find("div", class_="name")
                 a_tag = div_name_tag.find("a")
                 target_link = a_tag['href']
                 target_links.append((target_link, 0))

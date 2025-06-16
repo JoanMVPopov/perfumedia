@@ -849,8 +849,9 @@ def perform_all_clustering_analysis(X,
     for method_idx, method in enumerate(dim_reduction_methods):
         print(f"\nApplying {method.upper()} dimensionality reduction...")
 
+        # TODO: tsne_perplexity must be less than the number of samples
         reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-                                                            tsne_perplexity=50, umap_n_neighbors=50,
+                                                            tsne_perplexity=min(len(X) - 1, 50), umap_n_neighbors=50,
                                                             umap_min_dist=0.0)
 
         perform_clustering_algos_permutations(True, False, method, reducer, X_reduced, clustering_algorithms,
@@ -884,8 +885,9 @@ def perform_curated_choice(X, feature_names, pca_tev,
     for method_idx, method in enumerate(dim_reduction_visualization_methods):
         print(f"\nApplying {method.upper()} dimensionality reduction to visualize curated PCA clustered data...")
 
+        # TODO: tsne_perplexity must be less than the number of samples
         reducer, X_reduced = apply_dimensionality_reduction(X, method=method,
-                                                                tsne_perplexity=50, umap_n_neighbors=15,
+                                                                tsne_perplexity=min(len(X) - 1, 50), umap_n_neighbors=15,
                                                                 umap_min_dist=0.0)
 
         fig, axs = plt.subplots(5, 2, figsize=(30, 40))

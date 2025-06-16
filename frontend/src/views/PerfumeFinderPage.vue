@@ -20,8 +20,8 @@ const carouselConfig = {
         <a href="#build-your-own" class="text-black-500 hover:underline">
           I. Build Your Own
         </a>
-        <a href="#second-section" class="text-black-500 hover:underline">
-          II. Second Section
+        <a href="#chat-input" class="text-black-500 hover:underline">
+          II. (BETA) Chat Input
         </a>
       </nav>
     </aside>
@@ -31,6 +31,11 @@ const carouselConfig = {
       <!-- ~~~~~ SECTION I: BUILD YOUR OWN ~~~~~ -->
       <section id="build-your-own" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">I. Build Your Own Perfume</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Using Parfumo’s data format, build your dream perfume.
+          Once you’ve completed all the pie charts, you’ll be able to find perfumes in the <u>current</u> dataset
+          that match your description. You can also include specific notes if you already know which ones you like.
+        </p>
 
         <!-- ===== SUBSECTION 1.2: Pie Charts ===== -->
         <!-- Updated Pie Charts section -->
@@ -91,7 +96,7 @@ const carouselConfig = {
                         v-model.number="segment.percentage"
                         min="1"
                         max="100"
-                        class="w-full"
+                        class="w-full bg-[#C96868]"
                         @input="handleSliderInput(pieIndex, segIndex)"
                         @change="finalizeSliderChange(pieIndex)"
                       />
@@ -194,7 +199,7 @@ const carouselConfig = {
                 type="range"
                 min="0" max="1" step="0.01"
                 v-model.number="weight_categories"
-                class="w-full"
+                class="w-full bg-[#C96868]"
               />
             </div>
           </div>
@@ -204,8 +209,8 @@ const carouselConfig = {
           :disabled="!hasSelectedCategories() || loadingDefaultSimilarities"
           class="text-white px-3 py-1 rounded mb-4"
           :class="{
-            'bg-green-300 cursor-not-allowed': !hasSelectedCategories() || loadingDefaultSimilarities,
-            'bg-green-500 cursor-pointer': hasSelectedCategories() && !loadingDefaultSimilarities
+            'bg-[#C96868] opacity-50 cursor-not-allowed': !hasSelectedCategories() || loadingDefaultSimilarities,
+            'bg-[#C96868] opacity-100 cursor-pointer': hasSelectedCategories() && !loadingDefaultSimilarities
           }"
           >
             {{loadingDefaultSimilarities ? "Loading..." : "Calculate similarities"}}
@@ -268,8 +273,22 @@ const carouselConfig = {
 
       </section>
 
-      <section id="second-section" class="mb-12 scroll-mt-20">
-        <h1 class="text-2xl font-bold mb-4">II. Chat Input</h1>
+      <section id="chat-input" class="mb-12 scroll-mt-20">
+        <h1 class="text-2xl font-bold mb-4">II. (BETA) Chat Input</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Wouldn’t it be cool to describe the perfume you want in natural language rather than build multiple pie charts? Well, this fine-tuned cross-encoder is just what you need… maybe.
+        </p>
+        <p class="text-sm mb-4 text-gray-600">
+          I used a subset of the collected data to fine-tune the model on triplets consisting of:
+          <ul class="list-disc list-inside ml-6">
+            <li>a deterministic “anchor” perfume description</li>
+            <li>a positively LLM-paraphrased version</li>
+            <li>a negatively LLM-paraphrased version</li>
+          </ul>
+          <br>
+          Since this process is manual and not part of the ETL pipeline, the accuracy can be a bit questionable — but I’ll try to update the model periodically. Nevertheless, give it a shot!
+        </p>
+
         <div class="mt-4 flex">
           <input
             v-model="chatInput"
@@ -282,7 +301,7 @@ const carouselConfig = {
           <button
             @click="calculateModelSimilarities()"
             :disabled="loadingModelSimilarities"
-            class="bg-blue-500 text-white p-2 rounded-r-lg hover:bg-blue-600 focus:outline-none"
+            class="bg-[#C96868] text-white p-2 rounded-r-lg hover:bg-blue-600 focus:outline-none"
           >
             Send
           </button>
@@ -502,8 +521,8 @@ export default {
     handleNoteSelection() {
       if (this.selectedNote !== null) {
         this.selectedNotes.push(this.selectedNote);
-        console.log(this.selectedNotes)
-        console.log(this.selectedNote)
+        // console.log(this.selectedNotes)
+        // console.log(this.selectedNote)
         this.selectedNote = null;
       }
     },
@@ -522,7 +541,7 @@ export default {
           categories: this.pieCharts.flatMap(chart => chart.segments)
         })
         .then((response) => {
-          console.log(response);
+          // console.log(response);
           this.defaultSimilaritiesResult = response;
           this.loadingDefaultSimilarities = false;
         })
@@ -530,37 +549,18 @@ export default {
           console.error("Error calculating default similarities:", error);
         });
     },
-    // calculateModelSimilarities(){
-    //   this.modelSimilaritiesResult = null;
-    //   this.loadingModelSimilarities = true;
-    //   apiClient
-    //     .post("/test/pf-similarities-model/", {
-    //       query: this.chatInput
-    //     })
-    //     .then((response) => {
-    //       console.log(response);
-    //       this.modelSimilaritiesResult = response;
-    //       this.loadingModelSimilarities = false;
-    //     })
-    //     .catch((error) => {
-    //       console.error("Error calculating default similarities:", error);
-    //     });
-    // },
-    // In your Vue component or wherever you handle the POST:
     async calculateModelSimilarities() {
       this.modelSimilaritiesResult = null;
       this.loadingModelSimilarities = true;
+      this.currentModelSimilarityProgress = 0;
 
-      const response = await fetch("http://localhost:8000/django/test/pf-similarities-model/", {
+
+      // using this instead of the axios client because there are some problems with streaming responses
+      const response = await fetch(process.env.VUE_APP_API_URL + "/test/pf-similarities-model/", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({query: this.chatInput}), // your user input
+        body: JSON.stringify({query: this.chatInput}),
       });
-
-      if (!response.ok) {
-        console.error("Error status:", response.status);
-        return;
-      }
 
       // Read the streamed body
       const reader = response.body.getReader();
@@ -573,11 +573,8 @@ export default {
 
         const chunkText = decoder.decode(value, {stream: true});
         // chunkText may contain SSE-style lines, e.g. "data: {...}\n\n"
-        console.log("Chunk received:", chunkText);
+        // // console.log("Chunk received:", chunkText);
 
-        // If you're sending SSE-formatted lines, parse them:
-        // 1) split by newline
-        // 2) parse JSON after 'data: '
         const lines = chunkText.split("\n");
         for (const line of lines) {
           if (line.startsWith("data:")) {
@@ -586,11 +583,11 @@ export default {
               try {
                 const parsed = JSON.parse(jsonPart);
                 if (parsed.progress !== undefined) {
-                  console.log(`Progress: ${parsed.progress}%`);
+                  // console.log(`Progress: ${parsed.progress}%`);
                   this.currentModelSimilarityProgress = parsed.progress;
                 }
                 if (parsed.final !== undefined) {
-                  console.log("Got final results:", parsed.final);
+                  // console.log("Got final results:", parsed.final);
                   this.modelSimilaritiesResult = parsed.final;
                   this.loadingModelSimilarities = false;
                   await reader.cancel();
@@ -603,14 +600,14 @@ export default {
         }
       }
 
-      console.log("ALL DONE")
+      // console.log("ALL DONE")
     },
     // Fetch perfume notes from the backend
     fetchPerfumeNotes() {
       apiClient
         .get("/test/pf-perfume-notes")
         .then((response) => {
-          console.log(response.data.notes);
+          // console.log(response.data.notes);
           this.perfumeNotes = response.data.notes;
         })
         .catch((error) => {
@@ -762,6 +759,14 @@ export default {
 </script>
 
 <style scoped>
+/* Default vue3-carousel pagination styling */
+:deep(.carousel__pagination-button--active) {
+  background-color: #C96868 !important;
+}
+:deep(.carousel__pagination-button) {
+  background-color: #FADFA1;
+}
+
 /* v-select custom styling */
 :deep(.v-select) {
   background-color: white;
@@ -782,16 +787,18 @@ export default {
 }
 
 :deep(.carousel__next) {
-  inset-inline-end: 100px; /* moves the right arrow 10px from the edge */
-  background-color: #7EACB5; /* Set your desired background color */
-  border-radius: 50%; /* Optional: make it round */
-  padding: 5px; /* Optional: add some padding */
+  inset-inline-end: 100px;
+  background-color: #C96868;
+  border-radius: 50%;
+  padding: 5px;
+  color: white;
 }
 :deep(.carousel__prev) {
-  inset-inline-start: 100px; /* moves the left arrow 10px from the edge */
-  background-color: #7EACB5; /* Set your desired background color */
-  border-radius: 50%; /* Optional: make it round */
-  padding: 5px; /* Optional: add some padding */
+  inset-inline-start: 100px;
+  background-color: #C96868;
+  border-radius: 50%;
+  padding: 5px;
+  color: white;
 }
 
 </style>

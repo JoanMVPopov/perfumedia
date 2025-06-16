@@ -57,15 +57,13 @@ class EDADataRatings(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
 
         # Ensure the folder exists
         if not os.path.exists(folder_path):
             return Response({'error': 'Folder not found'},
                             status=status.HTTP_404_NOT_FOUND)
 
-        # List image files in the folder
-        image_files = []
 
         files_needed = [
             f"{decade}_{gender}",
@@ -75,6 +73,9 @@ class EDADataRatings(APIView):
             f"{decade}_{gender}_pairplots"
         ]
 
+        # List image files in the folder
+        image_files = ["placeholder"] * len(files_needed)
+
         for filename in os.listdir(folder_path):
             if os.path.isfile(os.path.join(folder_path, filename)):
                 split_text = os.path.splitext(filename)
@@ -83,7 +84,8 @@ class EDADataRatings(APIView):
                 filename_no_ext = split_text[0]
 
                 if filename_no_ext in files_needed:
-                    image_files.append(os.path.join(folder_path, filename))
+                    #image_files.append(os.path.join(folder_path, filename))
+                    image_files[files_needed.index(filename_no_ext)] = os.path.join(folder_path, filename)
                 # split_no_ext = filename_no_ext.split('_')
                 #
                 # if split_no_ext[0] == decade and split_no_ext[1] == gender:
@@ -124,7 +126,7 @@ class EDADataRatingsProgression(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
 
         # Ensure the folder exists
         if not os.path.exists(folder_path):
@@ -186,20 +188,20 @@ class EDADataCategoriesNotes(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
 
         # Ensure the folder exists
         if not os.path.exists(folder_path):
             return Response({'error': 'Folder not found'},
                             status=status.HTTP_404_NOT_FOUND)
 
-        # List image files in the folder
-        image_files = []
-
         files_needed = [
             f"{decade}_{gender}_avg_categories_piecharts",
             f"{decade}_{gender}_notes_histogram"
         ]
+
+        # List image files in the folder
+        image_files = ["placeholder"] * len(files_needed)
 
         for filename in os.listdir(folder_path):
             if os.path.isfile(os.path.join(folder_path, filename)):
@@ -209,7 +211,9 @@ class EDADataCategoriesNotes(APIView):
                 filename_no_ext = split_text[0]
 
                 if filename_no_ext in files_needed:
-                    image_files.append(os.path.join(folder_path, filename))
+                    #image_files.append(os.path.join(folder_path, filename))
+                    image_files[files_needed.index(filename_no_ext)] = os.path.join(folder_path, filename)
+
                 # split_no_ext = filename_no_ext.split('_')
                 #
                 # if split_no_ext[0] == decade and split_no_ext[1] == gender:
@@ -249,21 +253,21 @@ class EDADataCorrelation(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
 
         # Ensure the folder exists
         if not os.path.exists(folder_path):
             return Response({'error': 'Folder not found'},
                             status=status.HTTP_404_NOT_FOUND)
 
-        # List image files in the folder
-        image_files = []
-
         files_needed = [
             f"{decade}_{gender}_categories_rubrics_correlation",
             f"{decade}_{gender}_notes_categories_correlation",
             f"{decade}_{gender}_notes_rubrics_correlation"
         ]
+
+        # List image files in the folder
+        image_files = ["placeholder"] * len(files_needed)
 
         for filename in os.listdir(folder_path):
             if os.path.isfile(os.path.join(folder_path, filename)):
@@ -273,7 +277,9 @@ class EDADataCorrelation(APIView):
                 filename_no_ext = split_text[0]
 
                 if filename_no_ext in files_needed:
-                    image_files.append(os.path.join(folder_path, filename))
+                    #image_files.append(os.path.join(folder_path, filename))
+                    image_files[files_needed.index(filename_no_ext)] = os.path.join(folder_path, filename)
+
                 # split_no_ext = filename_no_ext.split('_')
                 #
                 # if split_no_ext[0] == decade and split_no_ext[1] == gender:
@@ -314,7 +320,7 @@ class EDADataBrands(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
 
         # Ensure the folder exists
         if not os.path.exists(folder_path):
@@ -375,7 +381,7 @@ class PFNotes(APIView):
             # Now get unique notes from the cleaned series
             unique_notes = exploded_notes.unique().tolist()
 
-            #print(unique_notes)
+            ##print(unique_notes)
 
             return Response({'notes': unique_notes}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -501,15 +507,15 @@ class PFModelSimilarity(APIView):
             queryset = perfumes_ordered.values()
             data = pd.DataFrame.from_records(queryset).reset_index(drop=True)
 
-            print("Loading model")
+            #print("Loading model")
             # Load the model into memory once
             MODEL = Model()
             # MODEL = None
 
-            print("Model initialized\n")
+            #print("Model initialized\n")
 
             if 'generated_descriptions' not in data.columns or data.at[0, 'generated_descriptions'] == "No description":
-                print("Fallback activated")
+                #print("Fallback activated")
                 categories = ['type', 'style', 'season', 'occasion']
                 ratings = ['scent', 'longevity', 'sillage', 'bottle', 'value_for_money']
 
@@ -525,7 +531,7 @@ class PFModelSimilarity(APIView):
                 # Perform bulk update in a single query
                 Perfume.objects.bulk_update(perfumes, ['generated_descriptions'])
 
-            print("After if fallback")
+            #print("After if fallback")
 
             number_of_perfumes = len(perfumes_ordered)
             step = 100
@@ -626,9 +632,9 @@ def generate_clustering_title(filename_no_ext, decade, gender, dr_method_selecte
 #         supported_clustering_methods = ["KMeans", "AffinityPropagation", "Agglomerative", "DBSCAN", "HDBSCAN", "GaussianMixture", "SpectralClustering"]
 #         supported_curated_dr_methods = ['tsne', 'umap', 'lle', 'isomap']
 #
-#         folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+#         folder_path = settings.MEDIA_ROOT
 #         if not os.path.exists(folder_path):
-#             return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+#             return Response({'error': 'MEDIA_ROOT folder not found'}, status=status.HTTP_404_NOT_FOUND)
 #
 #         images_data = []
 #         prefix = f"{decade}_{gender}_"
@@ -697,9 +703,9 @@ class CuratedClusteringInformation(APIView):
                 {'error': 'Missing required query parameters (decade, gender, clustering_method, dr_method)'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")  # Or your actual image folder
+        folder_path = settings.MEDIA_ROOT  # Or your actual image folder
         if not os.path.exists(folder_path):
-            return Response({'error': 'Image uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Image MEDIA_ROOT folder not found'}, status=status.HTTP_404_NOT_FOUND)
 
         prefix = f"{decade}_{gender}_"
         overview_visualization_data = None
@@ -737,9 +743,7 @@ class CuratedClusteringInformation(APIView):
             cluster_images = []
             cluster_perfumes = []
 
-            # TODO: IT SHOULD NOT BE PCA BY DEFAULT
-            # curated is pca, the _pca_ should actually be the dr_method chosen by the user
-            # right now it works, because I messed up the image names in airflow... cool
+            # dr_method does not matter for curated, I always do pca first, then dr to visualize the clustering (section I)
 
             # Violin Plot
             violin_filename = f"{prefix}violin_plots_curated_cluster{cluster_label}_pca_{clustering_method_param}.png"
@@ -819,9 +823,9 @@ class ClusteringPcaAnalysis(APIView):
         #         status=status.HTTP_400_BAD_REQUEST
         #     )
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT
         if not os.path.exists(folder_path):
-            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'MEDIA_ROOT folder not found'}, status=status.HTTP_404_NOT_FOUND)
 
         images_data = []
         prefix = f"{decade}_{gender}_"
@@ -861,71 +865,129 @@ class ClusteringOtherDrAnalysis(APIView):
     def get(self, request):
         decade = request.query_params.get('decade', None)
         gender = request.query_params.get('gender', None)
-        dr_method = request.query_params.get('dr_method', None)  # e.g., 'umap', 'tsne'
+        clustering_method_param = request.query_params.get('clustering_method', None)  # e.g., "KMeans"
+        dr_method_param = request.query_params.get('dr_method', None)  # e.g., "umap"
 
-        # if not decade or not gender or decade == 'All' or gender == 'All' or not dr_method:
-        #     return Response(
-        #         {"error": "Specific 'decade', 'gender' (not 'All'), and 'dr_method' are required."},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
+        if not all([decade, gender, clustering_method_param, dr_method_param]):
+            return Response(
+                {'error': 'Missing required query parameters (decade, gender, clustering_method, dr_method)'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        folder_path = os.path.join(settings.MEDIA_ROOT, "uploads")
+        folder_path = settings.MEDIA_ROOT  # Or your actual image folder
         if not os.path.exists(folder_path):
-            return Response({'error': 'Uploads folder not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Image MEDIA_ROOT folder not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        images_data = []
         prefix = f"{decade}_{gender}_"
+        overview_visualization_data = None
+        clusters_display_data = []
 
-        for filename in sorted(os.listdir(folder_path)):
-            if filename.startswith(prefix) and filename.endswith(".png"):
-                filename_no_ext = os.path.splitext(filename)[0]
+        overview_filename = f"{prefix}{dr_method_param}_2D_all_clustering_algos.png"
+        overview_title = (f"{decade} {gender} - All Clustering Algorithms"
+                          f"Visualized by {dr_method_param.upper()}")
 
-                # Ensure it's NOT a curated file (to avoid overlap with PCA section)
-                if "curated" in filename_no_ext:
-                    continue
+        overview_visualization_data = get_image_data_with_title(folder_path, overview_filename, overview_title)
 
-                # Check if it's related to the selected dr_method
-                # Main visualization: e.g. 1990_Masculine_umap_2D_all_clustering_algos.png
-                is_other_dr_viz = f"_{dr_method}_2D_all_clustering_algos" in filename_no_ext
+        unique_cluster_labels = []
+        try:
+            with connection.cursor() as cursor:
+                # Query for cluster labels for the specific clustering algorithm
+                # The reduction method for curated choices in etl_clusters is 'pca'
+                cursor.execute("""
+                    SELECT DISTINCT cluster
+                    FROM etl_clusters
+                    WHERE decade = %s AND gender = %s AND curated = FALSE
+                      AND reduction = %s AND clusterization = %s
+                    ORDER BY cluster;
+                """, [decade, gender, dr_method_param, clustering_method_param])
+                rows = cursor.fetchall()
+                unique_cluster_labels = [row[0] for row in rows if
+                                         row[0] is not None and row[0] != -1]  # Exclude noise if labeled as -1
+        except Exception as e:
+            print(f"Database error fetching cluster labels: {e}")
+            return Response({'error': 'Failed to fetch cluster labels from database.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                # Cluster details: e.g. 1990_Masculine_violin_plots_cluster0_umap_KMeans.png
-                is_other_dr_cluster_detail = (
-                        f"_cluster" in filename_no_ext and
-                        f"_{dr_method}_" in filename_no_ext and  # Check if the DR method is in the name before algo
-                        (filename_no_ext.endswith(dr_method + "_" + parts[-1]) for parts in
-                         [filename_no_ext.split('_')]) and  # More robust check
-                        ("violin_plots" in filename_no_ext or \
-                         "avg_categories_piecharts" in filename_no_ext or \
-                         "notes_histogram" in filename_no_ext)
-                )
-                # Refined check for cluster detail (ensure dr_method is directly before algo)
-                if "_cluster" in filename_no_ext and (
-                        "violin_plots" in filename_no_ext or "avg_categories_piecharts" in filename_no_ext or "notes_histogram" in filename_no_ext):
-                    parts_for_detail_check = filename_no_ext.split('_')
-                    try:
-                        # Assuming format ..._clusterX_DRMETHOD_ALGO.png
-                        if len(parts_for_detail_check) > 2 and parts_for_detail_check[-2] == dr_method:
-                            is_other_dr_cluster_detail = True
-                        else:
-                            is_other_dr_cluster_detail = False  # Reset if pattern not met
-                    except IndexError:
-                        is_other_dr_cluster_detail = False
+        #print(f"UNIQUE CLUSTER LABELS: {unique_cluster_labels}")
 
-                if is_other_dr_viz or is_other_dr_cluster_detail:
-                    file_path = os.path.join(folder_path, filename)
-                    try:
-                        with open(file_path, "rb") as img_file:
-                            base64_str = base64.b64encode(img_file.read()).decode('utf-8')
-                            images_data.append({
-                                "title": generate_clustering_title(filename_no_ext, decade, gender,
-                                                                   dr_method_selected=dr_method),
-                                "base64": base64_str,
-                                "filename": filename
+        # For each cluster, fetch its specific images and perfumes
+        for cluster_label in unique_cluster_labels:
+            cluster_images = []
+            cluster_perfumes = []
+
+            # dr_method does not matter for curated, I always do pca first, then dr to visualize the clustering (section I)
+
+            # Violin Plot
+            violin_filename = f"{prefix}violin_plots_cluster{cluster_label}_{dr_method_param}_{clustering_method_param}.png"
+
+            #print(violin_filename)
+
+            violin_title = f"Cluster {cluster_label} - Ratings Distribution"
+            img_data = get_image_data_with_title(folder_path, violin_filename, violin_title)
+            if img_data: cluster_images.append(img_data)
+
+            # Category Pie Chart
+            pie_filename = f"{prefix}avg_categories_piecharts_cluster{cluster_label}_{dr_method_param}_{clustering_method_param}.png"
+            pie_title = f"Cluster {cluster_label} - Average Category Composition"
+            img_data = get_image_data_with_title(folder_path, pie_filename, pie_title)
+            if img_data: cluster_images.append(img_data)
+
+            #print(pie_filename)
+
+            # Notes Histogram
+            histo_filename = f"{prefix}notes_histogram_cluster{cluster_label}_{dr_method_param}_{clustering_method_param}.png"
+            histo_title = f"Cluster {cluster_label} - Top Notes"
+            img_data = get_image_data_with_title(folder_path, histo_filename, histo_title)
+            if img_data: cluster_images.append(img_data)
+
+            #print(histo_filename)
+
+            try:
+                with connection.cursor() as cursor:
+                    # Get links from etl_clusters
+                    cursor.execute("""
+                        SELECT link
+                        FROM etl_clusters
+                        WHERE decade = %s AND gender = %s AND curated = FALSE
+                          AND reduction = %s AND clusterization = %s AND cluster = %s;
+                    """, [decade, gender, dr_method_param, clustering_method_param, cluster_label])
+                    perfume_links_rows = cursor.fetchall()
+                    perfume_links = [row[0] for row in perfume_links_rows]
+
+                    #print(perfume_links)
+
+                    if perfume_links:
+                        # Ensure the 'image' field provides a full URL or is handled by MEDIA_URL settings if it's a relative path
+                        placeholders = ','.join(['%s'] * len(perfume_links))
+                        query = f"""
+                            SELECT link, name, image, description 
+                            FROM etl_perfume 
+                            WHERE link IN ({placeholders});
+                        """
+                        cursor.execute(query, perfume_links)
+                        perfumes_details_rows = cursor.fetchall()
+                        for row in perfumes_details_rows:
+                            cluster_perfumes.append({
+                                "link": row[0],
+                                "name": row[1],
+                                "image": row[2],
+                                "description": row[3]
                             })
-                    except Exception as e:
-                        print(f"Error processing Other DR file {filename}: {e}")
+            except Exception as e:
+                print(f"Database error fetching perfumes for cluster {cluster_label}: {e}")
+                # Continue processing other clusters, but this one might have no perfumes listed
 
-        if not images_data:
-            return Response({'error': f'No {dr_method.upper()} based clustering images found for selected filters.'},
+            if cluster_images or cluster_perfumes:  # Add cluster only if it has images or perfumes
+                clusters_display_data.append({
+                    "clusterLabel": str(cluster_label),
+                    "images": cluster_images,
+                    "perfumes": cluster_perfumes
+                })
+
+        if not overview_visualization_data or not clusters_display_data:
+            return Response({'error': 'No overview visualization or cluster data found for the selected criteria.'},
                             status=status.HTTP_404_NOT_FOUND)
-        return Response({"images": images_data}, status=status.HTTP_200_OK)
+
+        return Response({
+            "overviewVisualization": overview_visualization_data,
+            "clustersData": clusters_display_data
+        }, status=status.HTTP_200_OK)

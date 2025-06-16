@@ -21,4 +21,5 @@ urlpatterns = [
     path("pf-similarities-model/", views.PFModelSimilarity.as_view()),
     path("clustering-pca-analysis/", views.ClusteringPcaAnalysis.as_view()),
     path("clustering-curated-cluster-details/", views.CuratedClusteringInformation.as_view()),
+    path("clustering-other-dr-analysis/", views.ClusteringOtherDrAnalysis.as_view()),
 ]

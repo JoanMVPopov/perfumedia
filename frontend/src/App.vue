@@ -26,6 +26,9 @@ export default {
 html {
   scroll-behavior: smooth;
 }
+html, body {
+  background-color: #FFF4EA; /* Match your page's background */
+}
 </style>
 
 <!--<style lang="scss">-->

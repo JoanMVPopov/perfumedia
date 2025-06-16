@@ -34,7 +34,7 @@ class Clusters(models.Model):
 
 
 class Perfume(models.Model):
-    link = models.TextField()
+    link = models.TextField(unique=True)
     name = models.CharField(max_length=255)
     brand = models.CharField(max_length=255)
     rel_year = models.IntegerField()

@@ -35,7 +35,8 @@ with DAG(
     'etl_pipeline',
     default_args=default_args,
     description='ETL pipeline using Selenium and Airflow with CeleryExecutor',
-    schedule_interval='*/4 * * * *',  # every 2 minutes
+    # IMPORTANT
+    schedule_interval='*/10 * * * *',  # every 10 minutes
     catchup=False,
     max_active_runs=1,
     max_active_tasks=3,

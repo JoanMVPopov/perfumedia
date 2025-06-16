@@ -28,6 +28,11 @@
       <!-- ~~~~~ SECTION I: RATINGS (ALREADY STYLED) ~~~~~ -->
       <section id="ratings" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">I. Ratings</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          This section presents “static” snapshots of rating data for one or two filter sets.
+          You’ll see descriptive‐statistic tables, box plots, pair‐plots, QQ plots, and violin plots,
+          which should help you get a sense of the central tendency, spread, distribution shape, and pairwise relationships among the perfume ratings.
+        </p>
 
         <!-- ========== FILTERS FOR RATINGS ========== -->
         <div class="mb-6 flex flex-col">
@@ -185,7 +190,7 @@
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index, expandedIndices1, displayedText, textToDisplay)"
+                      @click="toggleExplanation(index, expandedIndices1, displayedText, textToDisplay, typingIntervals1)"
                     >
                       {{ expandedIndices1.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
@@ -259,6 +264,10 @@
       <!-- ~~~~~ SECTION II: RATINGS PROGRESSION (UPDATED STYLING) ~~~~~ -->
       <section id="ratings-progression" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">II. Ratings progression</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Shows how average ratings evolve over time for the selected decade/gender filters.
+          Line charts plot yearly means with shaded regions (± 1 SD), revealing trends, fluctuations, and the consistency of reviews across years.
+        </p>
 
         <!-- ========== FILTERS (Progression) ========== -->
         <div class="mb-6 flex flex-col">
@@ -414,7 +423,7 @@
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index, expandedIndices2, displayedText2, textToDisplay2)"
+                      @click="toggleExplanation(index, expandedIndices2, displayedText2, textToDisplay2, typingIntervals2)"
                     >
                       {{ expandedIndices2.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
@@ -486,6 +495,11 @@
       <!-- ~~~~~ SECTION III: Categories & Notes (UPDATED STYLING) ~~~~~ -->
       <section id="categories-and-notes" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">III. Categories &amp; Notes</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Visualizes fragrance categories and the prevalence of individual scent notes.
+          You’ll get pie charts of category proportions and a bar chart of the top notes by frequency,
+          highlighting which styles and ingredients dominate.
+        </p>
 
         <!-- FILTERS -->
         <div class="mb-6 flex flex-col">
@@ -649,7 +663,7 @@
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index, expandedIndices3, displayedText3, textToDisplay3)"
+                      @click="toggleExplanation(index, expandedIndices3, displayedText3, textToDisplay3, typingIntervals3)"
                     >
                       {{ expandedIndices3.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
@@ -721,6 +735,9 @@
       <!-- ~~~~~ SECTION IV: Correlation (UPDATED STYLING) ~~~~~ -->
       <section id="correlation" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">IV. Correlation</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Uses heatmaps to explore relationships between metadata and ratings
+        </p>
 
         <!-- FILTERS -->
         <div class="mb-6 flex flex-col">
@@ -882,7 +899,7 @@
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index, expandedIndices4, displayedText4, textToDisplay4)"
+                      @click="toggleExplanation(index, expandedIndices4, displayedText4, textToDisplay4, typingIntervals4)"
                     >
                       {{ expandedIndices4.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
@@ -954,6 +971,11 @@
       <!-- ~~~~~ SECTION V: Brands (UPDATED STYLING) ~~~~~ -->
       <section id="brands" class="mb-12 scroll-mt-20">
         <h1 class="text-2xl font-bold mb-4">V. Brands</h1>
+        <p class="text-sm mb-4 text-gray-600">
+          Compares brand‐level performance across all rating dimensions.
+          A table (top 10 brands) highlights each brand’s scores, with the best values in each column emphasized,
+          making it easy to see which labels excel in scent, longevity, price, etc.
+        </p>
 
         <!-- FILTERS -->
         <div class="mb-6 flex flex-col">
@@ -1115,7 +1137,7 @@
                       class="sticky top-20 z-10 w-24 h-10 bg-[#C96868] text-white font-bold text-sm
                              rounded shadow-sm flex items-center justify-center
                              cursor-pointer select-none"
-                      @click="toggleExplanation(index, expandedIndices5, displayedText5, textToDisplay5)"
+                      @click="toggleExplanation(index, expandedIndices5, displayedText5, textToDisplay5, typingIntervals5)"
                     >
                       {{ expandedIndices5.includes(index) ? 'Hide Info' : 'More Info' }}
                     </div>
@@ -1187,7 +1209,7 @@
 </template>
 
 <script>
-import apiClient from "@/api"; // or your Axios instance / fetch utility
+import apiClient from "@/api"; // or Axios instance / fetch utility
 
 export default {
   name: "FiveSectionFiltersPlusTypewriter",
@@ -1203,7 +1225,6 @@ export default {
       error3: "",
       error4: "",
       error5: "",
-      // For toggling second set of filters in each section
       showSecondOptions: {
         ratings: false,
         ratingsProgression: false,
@@ -1211,67 +1232,53 @@ export default {
         correlation: false,
         brands: false,
       },
-      // The user’s typed text placeholders
       textToDisplay: [
         "The first table provides descriptive statistics, including the count, mean, median, mode, and standard deviation for each rating. The second table gives percentile-based distribution (25th, 50th, 75th percentiles) and the minimum and maximum values.",
         "Each box plot visualizes the median, interquartile range (IQR), and overall spread of the data, along with potential outliers (marked as dots). This plot is used to quickly assess the central tendency, variability, and any anomalies in the ratings for each rating.",
-        "The image presents a pair plot, which combines histograms and scatter plots to visualize relationships and distributions. The histograms on the diagonal show the distribution of individual ratings, while the scatter plots depict all possible pairwise relationships between the selected ratings. This type of plot is useful for identifying trends, correlations, and patterns across multiple variables.",
         "The QQ plots in this picture are used to assess whether the data for each rating follows a normal distribution by comparing the ordered data values to theoretical quantiles from a normal distribution. If the data points closely follow the red reference line, it suggests that the data is approximately normally distributed. Deviations from the line, particularly at the tails, indicate potential skewness or outliers.",
         "A violin plot combines a box plot and a kernel density plot to display both the distribution and central tendency of the data. The wider sections represent where data points are more concentrated, while the narrower sections indicate less frequent values. The central box plot provides additional insights into the median and interquartile range (IQR).",
+        "The image presents a pair plot, which combines histograms and scatter plots to visualize relationships and distributions. The histograms on the diagonal show the distribution of individual ratings, while the scatter plots depict all possible pairwise relationships between the selected ratings. This type of plot is useful for identifying trends, correlations, and patterns across multiple variables.",
       ],
-      // Where typed text is displayed
-      displayedText: ["", "", "", "", ""],
+      displayedText: ["", "", "", "", ""], // For Ratings
       textToDisplay2: [
           "The image displays multiple line plots showing the yearly average values for each rating over time, with a shaded region representing the standard deviation of ±1 around each point. The line connects the yearly averages, highlighting trends or fluctuations across the years. The shaded area provides a sense of the variability in the data, with wider regions indicating higher inconsistency among reviews for that year."
       ],
-      displayedText2: [""],
+      displayedText2: [""], // For Ratings Progression
       textToDisplay3: [
           "The image consists of multiple pie charts representing the distribution of different fragrance categories, with each slice corresponding to a specific category's percentage contribution. The 'Others' sections in each chart includes categories contributing less than 1% individually. This visualization highlights the diversity of fragrance types and allows for an easy comparison of the relative popularity or occurrence of each category.",
           "The bar chart displays the top 25 most frequently used fragrance notes in the dataset, ranked by the number of perfumes that include each note. The chart highlights the prevalence of certain notes compared to others, providing insight into the most popular ingredients in the dataset."
       ],
-      displayedText3: ["", ""],
+      displayedText3: ["", ""], // For Categories & Notes
       textToDisplay4: [
           "The heatmap illustrates the correlation between the available categories and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how categories may influence the perceived qualities of a perfume.",
           "The heatmap illustrates the correlation between the top 50 notes and the available categories. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the categories users classify the perfumes in.",
           "The heatmap illustrates the correlation between the top 50 notes and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the perceived qualities of a perfume."
       ],
-      displayedText4: ["", "", ""],
+      displayedText4: ["", "", ""], // For Correlation
       textToDisplay5: [
         "The table compares brand performance across all ratings, with the highest value in each column being highlighted. Only the top 10 most frequent brands are displayed. This visualization allows for quick identification of the best-performing brands in specific categories, showcasing their strengths. "
       ],
-      displayedText5: [""],
-      // Indices for which images are expanded (for single-col scenario)
+      displayedText5: [""], // For Brands
+
       expandedIndices1: [],
       expandedIndices2: [],
       expandedIndices3: [],
       expandedIndices4: [],
       expandedIndices5: [],
 
-      // Each section has 2 sets of filters (like your original code).
-      filters: {
-        ratings: {
-          set1: { decade: "All", gender: "All" },
-          set2: { decade: "All", gender: "All" },
-        },
-        ratingsProgression: {
-          set1: { decade: "All", gender: "All" },
-          set2: { decade: "All", gender: "All" },
-        },
-        categoriesAndNotes: {
-          set1: { decade: "All", gender: "All" },
-          set2: { decade: "All", gender: "All" },
-        },
-        correlation: {
-          set1: { decade: "All", gender: "All" },
-          set2: { decade: "All", gender: "All" },
-        },
-        brands: {
-          set1: { decade: "All", gender: "All" },
-          set2: { decade: "All", gender: "All" },
-        },
-      },
+      typingIntervals1: {},
+      typingIntervals2: {},
+      typingIntervals3: {},
+      typingIntervals4: {},
+      typingIntervals5: {},
 
-      // Each section now stores up to 2 arrays of images
+      filters: {
+        ratings: { set1: { decade: "All", gender: "All" }, set2: { decade: "All", gender: "All" } },
+        ratingsProgression: { set1: { decade: "All", gender: "All" }, set2: { decade: "All", gender: "All" } },
+        categoriesAndNotes: { set1: { decade: "All", gender: "All" }, set2: { decade: "All", gender: "All" } },
+        correlation: { set1: { decade: "All", gender: "All" }, set2: { decade: "All", gender: "All" } },
+        brands: { set1: { decade: "All", gender: "All" }, set2: { decade: "All", gender: "All" } },
+      },
       images: {
         ratings: [[], []],
         ratingsProgression: [[], []],
@@ -1282,225 +1289,502 @@ export default {
     };
   },
   methods: {
-    // === TYPEWRITER METHOD ===
-    typeText(dT, textPremade, textIndex) {
-      let index = 0;
-
-      // Reset displayed text if previously typed
-      if (dT[textIndex] !== "") {
-        dT[textIndex] = "";
+    typeText(displayedTextArray, fullTextToDisplay, textSlotIndex, sectionTypingIntervalsStore) {
+      if (sectionTypingIntervalsStore[textSlotIndex]) {
+        clearInterval(sectionTypingIntervalsStore[textSlotIndex]);
       }
+      let currentCharacterIndex = 0;
+      displayedTextArray[textSlotIndex] = "";
+      this.$forceUpdate(); // May be needed if Vue doesn't pick up direct array index modification for reactivity in some cases
 
-      const interval = setInterval(() => {
-        if (index < textPremade.length) {
-          dT[textIndex] += textPremade[index];
-          index++;
+      sectionTypingIntervalsStore[textSlotIndex] = setInterval(() => {
+        if (currentCharacterIndex < fullTextToDisplay.length) {
+          displayedTextArray[textSlotIndex] += fullTextToDisplay[currentCharacterIndex];
+          currentCharacterIndex++;
+          this.$forceUpdate(); // Ensure reactive update of the text
         } else {
-          clearInterval(interval); // Stop when text is fully typed
+          clearInterval(sectionTypingIntervalsStore[textSlotIndex]);
+          delete sectionTypingIntervalsStore[textSlotIndex];
         }
       }, 20);
     },
 
-    // === TOGGLE EXPLANATION (SINGLE-COL ONLY) ===
-    toggleExplanation(index, eI, dT, ttD) {
-      const i = eI.indexOf(index);
+    toggleExplanation(imageIndex, expandedIndicesArray, displayedTextArray, textToDisplayArray, sectionTypingIntervalsStore) {
+      const i = expandedIndicesArray.indexOf(imageIndex);
+      const textSlotIndex = imageIndex % textToDisplayArray.length;
+
       if (i > -1) {
-        // Already expanded => collapse
-        eI.splice(i, 1);
-        // Clear typed text
-        dT[index % ttD.length] = "";
+        expandedIndicesArray.splice(i, 1);
+        displayedTextArray[textSlotIndex] = "";
+        if (sectionTypingIntervalsStore[textSlotIndex]) {
+          clearInterval(sectionTypingIntervalsStore[textSlotIndex]);
+          delete sectionTypingIntervalsStore[textSlotIndex];
+        }
       } else {
-        // Expand
-        eI.push(index);
-        // Trigger typewriter for that index
+        expandedIndicesArray.push(imageIndex);
         this.typeText(
-            dT,
-          ttD[index % ttD.length],
-          index % ttD.length
+          displayedTextArray,
+          textToDisplayArray[textSlotIndex],
+          textSlotIndex,
+          sectionTypingIntervalsStore
         );
       }
+       this.$forceUpdate(); // Ensure overall component reactivity if needed
     },
 
-    // === TOGGLE SECOND SET OF FILTERS (COMPARE WITH) ===
     toggleSecondOptions(section) {
       this.showSecondOptions[section] = !this.showSecondOptions[section];
+      // Note: Changing this does not automatically re-fetch. User needs to click "Get <Section>" again.
+      // If re-fetch is desired, call the fetch method here, but be mindful of UX.
     },
 
-    // === CHECK IF WE SHOW 2 COLUMNS OF IMAGES ===
     showTwoColumns(section) {
       return (
         this.showSecondOptions[section] &&
+        this.images[section] && // ensure images[section] exists
         this.images[section][1] &&
         this.images[section][1].length > 0
       );
     },
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // All the "fetch" methods: each makes 1 or 2 API calls
-    // depending on whether second set is toggled
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    resetSectionState(sectionIndex, textDisplayArrayBase, displayedTextArrayName, expandedIndicesArrayName, typingIntervalsStoreName) {
+        this[expandedIndicesArrayName] = [];
+        this[displayedTextArrayName] = Array(textDisplayArrayBase.length).fill("");
+        if (this[typingIntervalsStoreName]) {
+            Object.values(this[typingIntervalsStoreName]).forEach(clearInterval);
+        }
+        this[typingIntervalsStoreName] = {};
+    },
+
     async fetchRatings() {
       this.error1 = "";
-
       this.loading1 = true;
+      this.resetSectionState(0, this.textToDisplay, 'displayedText', 'expandedIndices1', 'typingIntervals1');
 
       try {
-        // Build an array of sets to fetch
         const relevantSets = this.showSecondOptions.ratings
           ? [this.filters.ratings.set1, this.filters.ratings.set2]
           : [this.filters.ratings.set1];
-
-        // Make parallel calls
         const responses = await Promise.all(
-          relevantSets.map((opts) =>
-            apiClient.get("/test/eda-ratings", {
-              params: {
-                decade: opts.decade,
-                gender: opts.gender,
-              },
-            })
-          )
+          relevantSets.map((opts) => apiClient.get("/test/eda-ratings", { params: opts }))
         );
-
-        // Store into images.ratings[0] and [1]
-        this.images.ratings[0] = responses[0].data.images || [];
+        this.images.ratings[0] = responses[0]?.data?.images || [];
         this.images.ratings[1] = responses[1]?.data?.images || [];
-        this.expandedIndices = []; // reset expansions
-
-        this.loading1 = false;
       } catch (err) {
-        console.error(err);
-        this.error1 = "Error fetching Ratings data. Try refreshing the page";
+        console.error("Error fetching Ratings data:", err);
+        this.error1 = "Error fetching Ratings data. Try refreshing or check console.";
+        this.images.ratings = [[],[]]; // Clear on error
+      } finally {
+        this.loading1 = false;
       }
     },
 
     async fetchRatingsProgression() {
       this.error2 = "";
       this.loading2 = true;
-
+      this.resetSectionState(1, this.textToDisplay2, 'displayedText2', 'expandedIndices2', 'typingIntervals2');
       try {
         const relevantSets = this.showSecondOptions.ratingsProgression
-          ? [
-              this.filters.ratingsProgression.set1,
-              this.filters.ratingsProgression.set2,
-            ]
+          ? [ this.filters.ratingsProgression.set1, this.filters.ratingsProgression.set2, ]
           : [this.filters.ratingsProgression.set1];
-
         const responses = await Promise.all(
-          relevantSets.map((opts) =>
-            apiClient.get("/test/eda-ratings-prog", {
-              params: {
-                decade: opts.decade,
-                gender: opts.gender,
-              },
-            })
-          )
+          relevantSets.map((opts) => apiClient.get("/test/eda-ratings-prog", { params: opts }))
         );
-
-        this.images.ratingsProgression[0] = responses[0].data.images || [];
+        this.images.ratingsProgression[0] = responses[0]?.data?.images || [];
         this.images.ratingsProgression[1] = responses[1]?.data?.images || [];
-
-        this.loading2 = false;
       } catch (err) {
-        console.error(err);
-        this.error2 = "Error fetching Ratings progression data. Try refreshing the page";
+        console.error("Error fetching Ratings Progression data:", err);
+        this.error2 = "Error fetching Ratings progression. Try refreshing or check console.";
+        this.images.ratingsProgression = [[],[]];
+      } finally {
+        this.loading2 = false;
       }
     },
 
     async fetchCategoriesAndNotes() {
       this.error3 = "";
       this.loading3 = true;
-
+      this.resetSectionState(2, this.textToDisplay3, 'displayedText3', 'expandedIndices3', 'typingIntervals3');
       try {
         const relevantSets = this.showSecondOptions.categoriesAndNotes
-          ? [
-              this.filters.categoriesAndNotes.set1,
-              this.filters.categoriesAndNotes.set2,
-            ]
+          ? [ this.filters.categoriesAndNotes.set1, this.filters.categoriesAndNotes.set2, ]
           : [this.filters.categoriesAndNotes.set1];
-
         const responses = await Promise.all(
-          relevantSets.map((opts) =>
-            apiClient.get("/test/eda-cat-notes", {
-              params: {
-                decade: opts.decade,
-                gender: opts.gender,
-              },
-            })
-          )
+          relevantSets.map((opts) => apiClient.get("/test/eda-cat-notes", { params: opts }))
         );
-
-        this.images.categoriesAndNotes[0] = responses[0].data.images || [];
+        this.images.categoriesAndNotes[0] = responses[0]?.data?.images || [];
         this.images.categoriesAndNotes[1] = responses[1]?.data?.images || [];
-
-        this.loading3 = false;
       } catch (err) {
-        console.error(err);
-        this.error3 = "Error fetching Categories & Notes data. Try refreshing the page";
+        console.error("Error fetching Categories/Notes data:", err);
+        this.error3 = "Error fetching Categories & Notes. Try refreshing or check console.";
+        this.images.categoriesAndNotes = [[],[]];
+      } finally {
+        this.loading3 = false;
       }
     },
 
     async fetchCorrelation() {
       this.error4 = "";
       this.loading4 = true;
-
+      this.resetSectionState(3, this.textToDisplay4, 'displayedText4', 'expandedIndices4', 'typingIntervals4');
       try {
         const relevantSets = this.showSecondOptions.correlation
           ? [this.filters.correlation.set1, this.filters.correlation.set2]
           : [this.filters.correlation.set1];
-
         const responses = await Promise.all(
-          relevantSets.map((opts) =>
-            apiClient.get("/test/eda-correlation", {
-              params: {
-                decade: opts.decade,
-                gender: opts.gender,
-              },
-            })
-          )
+          relevantSets.map((opts) => apiClient.get("/test/eda-correlation", { params: opts }))
         );
-
-        this.images.correlation[0] = responses[0].data.images || [];
+        this.images.correlation[0] = responses[0]?.data?.images || [];
         this.images.correlation[1] = responses[1]?.data?.images || [];
-
-        this.loading4 = false;
       } catch (err) {
-        console.error(err);
-        this.error4 = "Error fetching Correlation data. Try refreshing the page";
+        console.error("Error fetching Correlation data:", err);
+        this.error4 = "Error fetching Correlation data. Try refreshing or check console.";
+        this.images.correlation = [[],[]];
+      } finally {
+        this.loading4 = false;
       }
     },
 
     async fetchBrands() {
       this.error5 = "";
       this.loading5 = true;
-
+      this.resetSectionState(4, this.textToDisplay5, 'displayedText5', 'expandedIndices5', 'typingIntervals5');
       try {
         const relevantSets = this.showSecondOptions.brands
           ? [this.filters.brands.set1, this.filters.brands.set2]
           : [this.filters.brands.set1];
-
         const responses = await Promise.all(
-          relevantSets.map((opts) =>
-            apiClient.get("/test/eda-brands", {
-              params: {
-                decade: opts.decade,
-                gender: opts.gender,
-              },
-            })
-          )
+          relevantSets.map((opts) => apiClient.get("/test/eda-brands", { params: opts }))
         );
-
-        this.images.brands[0] = responses[0].data.images || [];
+        this.images.brands[0] = responses[0]?.data?.images || [];
         this.images.brands[1] = responses[1]?.data?.images || [];
-        this.loading5 = false;
       } catch (err) {
-        console.error(err);
-        this.error5 = "Error fetching Brands data.mTry refreshing the page";
+        console.error("Error fetching Brands data:", err);
+        this.error5 = "Error fetching Brands data. Try refreshing or check console.";
+        this.images.brands = [[],[]];
+      } finally {
+        this.loading5 = false;
       }
     },
   },
 };
 </script>
+
+<!--<script>-->
+<!--import apiClient from "@/api"; // or Axios instance / fetch utility-->
+
+<!--export default {-->
+<!--  name: "FiveSectionFiltersPlusTypewriter",-->
+<!--  data() {-->
+<!--    return {-->
+<!--      loading1: false,-->
+<!--      loading2: false,-->
+<!--      loading3: false,-->
+<!--      loading4: false,-->
+<!--      loading5: false,-->
+<!--      error1: "",-->
+<!--      error2: "",-->
+<!--      error3: "",-->
+<!--      error4: "",-->
+<!--      error5: "",-->
+<!--      // For toggling second set of filters in each section-->
+<!--      showSecondOptions: {-->
+<!--        ratings: false,-->
+<!--        ratingsProgression: false,-->
+<!--        categoriesAndNotes: false,-->
+<!--        correlation: false,-->
+<!--        brands: false,-->
+<!--      },-->
+<!--      // The user’s typed text placeholders-->
+<!--      textToDisplay: [-->
+<!--        "The first table provides descriptive statistics, including the count, mean, median, mode, and standard deviation for each rating. The second table gives percentile-based distribution (25th, 50th, 75th percentiles) and the minimum and maximum values.",-->
+<!--        "Each box plot visualizes the median, interquartile range (IQR), and overall spread of the data, along with potential outliers (marked as dots). This plot is used to quickly assess the central tendency, variability, and any anomalies in the ratings for each rating.",-->
+<!--        "The image presents a pair plot, which combines histograms and scatter plots to visualize relationships and distributions. The histograms on the diagonal show the distribution of individual ratings, while the scatter plots depict all possible pairwise relationships between the selected ratings. This type of plot is useful for identifying trends, correlations, and patterns across multiple variables.",-->
+<!--        "The QQ plots in this picture are used to assess whether the data for each rating follows a normal distribution by comparing the ordered data values to theoretical quantiles from a normal distribution. If the data points closely follow the red reference line, it suggests that the data is approximately normally distributed. Deviations from the line, particularly at the tails, indicate potential skewness or outliers.",-->
+<!--        "A violin plot combines a box plot and a kernel density plot to display both the distribution and central tendency of the data. The wider sections represent where data points are more concentrated, while the narrower sections indicate less frequent values. The central box plot provides additional insights into the median and interquartile range (IQR).",-->
+<!--      ],-->
+<!--      // Where typed text is displayed-->
+<!--      displayedText: ["", "", "", "", ""],-->
+<!--      textToDisplay2: [-->
+<!--          "The image displays multiple line plots showing the yearly average values for each rating over time, with a shaded region representing the standard deviation of ±1 around each point. The line connects the yearly averages, highlighting trends or fluctuations across the years. The shaded area provides a sense of the variability in the data, with wider regions indicating higher inconsistency among reviews for that year."-->
+<!--      ],-->
+<!--      displayedText2: [""],-->
+<!--      textToDisplay3: [-->
+<!--          "The image consists of multiple pie charts representing the distribution of different fragrance categories, with each slice corresponding to a specific category's percentage contribution. The 'Others' sections in each chart includes categories contributing less than 1% individually. This visualization highlights the diversity of fragrance types and allows for an easy comparison of the relative popularity or occurrence of each category.",-->
+<!--          "The bar chart displays the top 25 most frequently used fragrance notes in the dataset, ranked by the number of perfumes that include each note. The chart highlights the prevalence of certain notes compared to others, providing insight into the most popular ingredients in the dataset."-->
+<!--      ],-->
+<!--      displayedText3: ["", ""],-->
+<!--      textToDisplay4: [-->
+<!--          "The heatmap illustrates the correlation between the available categories and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how categories may influence the perceived qualities of a perfume.",-->
+<!--          "The heatmap illustrates the correlation between the top 50 notes and the available categories. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the categories users classify the perfumes in.",-->
+<!--          "The heatmap illustrates the correlation between the top 50 notes and all rating rubrics. Each cell's color intensity indicates the strength and direction of the correlation, with a gradient ranging from negative (blue) to positive (red). This visualization provides a comprehensive overview of how notes may influence the perceived qualities of a perfume."-->
+<!--      ],-->
+<!--      displayedText4: ["", "", ""],-->
+<!--      textToDisplay5: [-->
+<!--        "The table compares brand performance across all ratings, with the highest value in each column being highlighted. Only the top 10 most frequent brands are displayed. This visualization allows for quick identification of the best-performing brands in specific categories, showcasing their strengths. "-->
+<!--      ],-->
+<!--      displayedText5: [""],-->
+<!--      // Indices for which images are expanded (for single-col scenario)-->
+<!--      expandedIndices1: [],-->
+<!--      expandedIndices2: [],-->
+<!--      expandedIndices3: [],-->
+<!--      expandedIndices4: [],-->
+<!--      expandedIndices5: [],-->
+
+<!--      // Each section has 2 sets of filters (like original code).-->
+<!--      filters: {-->
+<!--        ratings: {-->
+<!--          set1: { decade: "All", gender: "All" },-->
+<!--          set2: { decade: "All", gender: "All" },-->
+<!--        },-->
+<!--        ratingsProgression: {-->
+<!--          set1: { decade: "All", gender: "All" },-->
+<!--          set2: { decade: "All", gender: "All" },-->
+<!--        },-->
+<!--        categoriesAndNotes: {-->
+<!--          set1: { decade: "All", gender: "All" },-->
+<!--          set2: { decade: "All", gender: "All" },-->
+<!--        },-->
+<!--        correlation: {-->
+<!--          set1: { decade: "All", gender: "All" },-->
+<!--          set2: { decade: "All", gender: "All" },-->
+<!--        },-->
+<!--        brands: {-->
+<!--          set1: { decade: "All", gender: "All" },-->
+<!--          set2: { decade: "All", gender: "All" },-->
+<!--        },-->
+<!--      },-->
+
+<!--      // Each section now stores up to 2 arrays of images-->
+<!--      images: {-->
+<!--        ratings: [[], []],-->
+<!--        ratingsProgression: [[], []],-->
+<!--        categoriesAndNotes: [[], []],-->
+<!--        correlation: [[], []],-->
+<!--        brands: [[], []],-->
+<!--      },-->
+<!--    };-->
+<!--  },-->
+<!--  methods: {-->
+<!--    // === TYPEWRITER METHOD ===-->
+<!--    typeText(dT, textPremade, textIndex) {-->
+<!--      let index = 0;-->
+
+<!--      // Reset displayed text if previously typed-->
+<!--      if (dT[textIndex] !== "") {-->
+<!--        dT[textIndex] = "";-->
+<!--      }-->
+
+<!--      const interval = setInterval(() => {-->
+<!--        if (index < textPremade.length) {-->
+<!--          dT[textIndex] += textPremade[index];-->
+<!--          index++;-->
+<!--        } else {-->
+<!--          clearInterval(interval); // Stop when text is fully typed-->
+<!--        }-->
+<!--      }, 20);-->
+<!--    },-->
+
+<!--    // === TOGGLE EXPLANATION (SINGLE-COL ONLY) ===-->
+<!--    toggleExplanation(index, eI, dT, ttD) {-->
+<!--      const i = eI.indexOf(index);-->
+<!--      if (i > -1) {-->
+<!--        // Already expanded => collapse-->
+<!--        eI.splice(i, 1);-->
+<!--        // Clear typed text-->
+<!--        dT[index % ttD.length] = "";-->
+<!--      } else {-->
+<!--        // Expand-->
+<!--        eI.push(index);-->
+<!--        // Trigger typewriter for that index-->
+<!--        this.typeText(-->
+<!--            dT,-->
+<!--          ttD[index % ttD.length],-->
+<!--          index % ttD.length-->
+<!--        );-->
+<!--      }-->
+<!--    },-->
+
+<!--    // === TOGGLE SECOND SET OF FILTERS (COMPARE WITH) ===-->
+<!--    toggleSecondOptions(section) {-->
+<!--      this.showSecondOptions[section] = !this.showSecondOptions[section];-->
+<!--    },-->
+
+<!--    // === CHECK IF WE SHOW 2 COLUMNS OF IMAGES ===-->
+<!--    showTwoColumns(section) {-->
+<!--      return (-->
+<!--        this.showSecondOptions[section] &&-->
+<!--        this.images[section][1] &&-->
+<!--        this.images[section][1].length > 0-->
+<!--      );-->
+<!--    },-->
+
+<!--    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<!--    // All the "fetch" methods: each makes 1 or 2 API calls-->
+<!--    // depending on whether second set is toggled-->
+<!--    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<!--    async fetchRatings() {-->
+<!--      this.error1 = "";-->
+
+<!--      this.loading1 = true;-->
+
+<!--      try {-->
+<!--        // Build an array of sets to fetch-->
+<!--        const relevantSets = this.showSecondOptions.ratings-->
+<!--          ? [this.filters.ratings.set1, this.filters.ratings.set2]-->
+<!--          : [this.filters.ratings.set1];-->
+
+<!--        // Make parallel calls-->
+<!--        const responses = await Promise.all(-->
+<!--          relevantSets.map((opts) =>-->
+<!--            apiClient.get("/test/eda-ratings", {-->
+<!--              params: {-->
+<!--                decade: opts.decade,-->
+<!--                gender: opts.gender,-->
+<!--              },-->
+<!--            })-->
+<!--          )-->
+<!--        );-->
+
+<!--        // Store into images.ratings[0] and [1]-->
+<!--        this.images.ratings[0] = responses[0].data.images || [];-->
+<!--        this.images.ratings[1] = responses[1]?.data?.images || [];-->
+<!--        this.expandedIndices = []; // reset expansions-->
+
+<!--        this.loading1 = false;-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        this.error1 = "Error fetching Ratings data. Try refreshing the page";-->
+<!--      }-->
+<!--    },-->
+
+<!--    async fetchRatingsProgression() {-->
+<!--      this.error2 = "";-->
+<!--      this.loading2 = true;-->
+
+<!--      try {-->
+<!--        const relevantSets = this.showSecondOptions.ratingsProgression-->
+<!--          ? [-->
+<!--              this.filters.ratingsProgression.set1,-->
+<!--              this.filters.ratingsProgression.set2,-->
+<!--            ]-->
+<!--          : [this.filters.ratingsProgression.set1];-->
+
+<!--        const responses = await Promise.all(-->
+<!--          relevantSets.map((opts) =>-->
+<!--            apiClient.get("/test/eda-ratings-prog", {-->
+<!--              params: {-->
+<!--                decade: opts.decade,-->
+<!--                gender: opts.gender,-->
+<!--              },-->
+<!--            })-->
+<!--          )-->
+<!--        );-->
+
+<!--        this.images.ratingsProgression[0] = responses[0].data.images || [];-->
+<!--        this.images.ratingsProgression[1] = responses[1]?.data?.images || [];-->
+
+<!--        this.loading2 = false;-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        this.error2 = "Error fetching Ratings progression data. Try refreshing the page";-->
+<!--      }-->
+<!--    },-->
+
+<!--    async fetchCategoriesAndNotes() {-->
+<!--      this.error3 = "";-->
+<!--      this.loading3 = true;-->
+
+<!--      try {-->
+<!--        const relevantSets = this.showSecondOptions.categoriesAndNotes-->
+<!--          ? [-->
+<!--              this.filters.categoriesAndNotes.set1,-->
+<!--              this.filters.categoriesAndNotes.set2,-->
+<!--            ]-->
+<!--          : [this.filters.categoriesAndNotes.set1];-->
+
+<!--        const responses = await Promise.all(-->
+<!--          relevantSets.map((opts) =>-->
+<!--            apiClient.get("/test/eda-cat-notes", {-->
+<!--              params: {-->
+<!--                decade: opts.decade,-->
+<!--                gender: opts.gender,-->
+<!--              },-->
+<!--            })-->
+<!--          )-->
+<!--        );-->
+
+<!--        this.images.categoriesAndNotes[0] = responses[0].data.images || [];-->
+<!--        this.images.categoriesAndNotes[1] = responses[1]?.data?.images || [];-->
+
+<!--        this.loading3 = false;-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        this.error3 = "Error fetching Categories & Notes data. Try refreshing the page";-->
+<!--      }-->
+<!--    },-->
+
+<!--    async fetchCorrelation() {-->
+<!--      this.error4 = "";-->
+<!--      this.loading4 = true;-->
+
+<!--      try {-->
+<!--        const relevantSets = this.showSecondOptions.correlation-->
+<!--          ? [this.filters.correlation.set1, this.filters.correlation.set2]-->
+<!--          : [this.filters.correlation.set1];-->
+
+<!--        const responses = await Promise.all(-->
+<!--          relevantSets.map((opts) =>-->
+<!--            apiClient.get("/test/eda-correlation", {-->
+<!--              params: {-->
+<!--                decade: opts.decade,-->
+<!--                gender: opts.gender,-->
+<!--              },-->
+<!--            })-->
+<!--          )-->
+<!--        );-->
+
+<!--        this.images.correlation[0] = responses[0].data.images || [];-->
+<!--        this.images.correlation[1] = responses[1]?.data?.images || [];-->
+
+<!--        this.loading4 = false;-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        this.error4 = "Error fetching Correlation data. Try refreshing the page";-->
+<!--      }-->
+<!--    },-->
+
+<!--    async fetchBrands() {-->
+<!--      this.error5 = "";-->
+<!--      this.loading5 = true;-->
+
+<!--      try {-->
+<!--        const relevantSets = this.showSecondOptions.brands-->
+<!--          ? [this.filters.brands.set1, this.filters.brands.set2]-->
+<!--          : [this.filters.brands.set1];-->
+
+<!--        const responses = await Promise.all(-->
+<!--          relevantSets.map((opts) =>-->
+<!--            apiClient.get("/test/eda-brands", {-->
+<!--              params: {-->
+<!--                decade: opts.decade,-->
+<!--                gender: opts.gender,-->
+<!--              },-->
+<!--            })-->
+<!--          )-->
+<!--        );-->
+
+<!--        this.images.brands[0] = responses[0].data.images || [];-->
+<!--        this.images.brands[1] = responses[1]?.data?.images || [];-->
+<!--        this.loading5 = false;-->
+<!--      } catch (err) {-->
+<!--        console.error(err);-->
+<!--        this.error5 = "Error fetching Brands data.mTry refreshing the page";-->
+<!--      }-->
+<!--    },-->
+<!--  },-->
+<!--};-->
+<!--</script>-->
 
 <style scoped>
 

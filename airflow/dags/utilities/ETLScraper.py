@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from utilities.generic.Driver import ScrapeDriver
 from pydantic import BaseModel
+import traceback
 
 
 class Scraper(BaseModel):
@@ -47,10 +48,17 @@ class Scraper(BaseModel):
             finally:
                 self.driver_instance.driver.switch_to.default_content()
 
-        # Show pie charts and prepare soup
-        chart_button_xpath = "/html/body/div[5]/div/div[1]/div[1]/nav/div[6]/span"
+        chart_button_location = "//nav[normalize-space(@class)='flex ptabs']//span[contains(., 'Chart')]"
+        chart_button = ((WebDriverWait(self.driver_instance.driver, 10))
+                       .until(EC.presence_of_element_located((By.XPATH, chart_button_location))))
 
-        chart_button = (WebDriverWait(self.driver_instance.driver, 10)).until(EC.presence_of_element_located((By.XPATH, chart_button_xpath)))
+
+        # Show pie charts and prepare soup
+        # #chart_button_xpath = "/html/body/div[5]/div/div[1]/div[1]/nav/div[6]/span"
+        # chart_button_xpath = "/html/body/div[4]/div/div[1]/div[1]/nav/div[6]/span"
+        # # /html/body/div[4]/div/div[1]/div[1]/nav/div[7]/span
+        #
+        # chart_button = (WebDriverWait(self.driver_instance.driver, 10)).until(EC.presence_of_element_located((By.XPATH, chart_button_xpath)))
         chart_button.click()
 
         # Wait until data shows up
@@ -121,7 +129,13 @@ class Scraper(BaseModel):
         data_dic['Longevity'] = current_rating_item[1]
         data_dic['Sillage'] = current_rating_item[2]
         data_dic['Bottle'] = current_rating_item[3]
-        data_dic['Value For Money'] = current_rating_item[4]
+
+        # TODO: This is not very good.
+        try:
+            data_dic['Value For Money'] = current_rating_item[4]
+        except:
+            data_dic['Value For Money'] = (data_dic['Scent'] + data_dic['Longevity']
+            + data_dic['Sillage'] + data_dic['Bottle']) / 4
 
         return data_dic
 
@@ -151,6 +165,8 @@ class Scraper(BaseModel):
         data_dic['Year'] = a_brand_year
         data_dic['Decade'] = brand_decade
         data_dic['Description'] = soup.find('meta', property='og:description')['content']
+        # TODO: this solution stinks, user better default behaviour
+        data_dic['Generated_descriptions'] = "No description"
         data_dic['Image'] = soup.find('meta', property='og:image')['content']
 
         return data_dic
@@ -161,14 +177,25 @@ class Scraper(BaseModel):
         cursor = connection.cursor()
 
         try:
+            # select_query = """
+            #             SELECT id, link
+            #             FROM etl_backlog
+            #             WHERE attempts < 3
+            #             ORDER BY id
+            #             LIMIT 40
+            #             FOR UPDATE SKIP LOCKED;
+            #         """
+
+            # IMPORTANT
+
             select_query = """
-                        SELECT id, link 
-                        FROM etl_backlog
-                        WHERE attempts < 3
-                        ORDER BY id
-                        LIMIT 40
-                        FOR UPDATE SKIP LOCKED;
-                    """
+                            SELECT id, link 
+                            FROM etl_backlog
+                            WHERE attempts < 3
+                            ORDER BY id
+                            LIMIT 5
+                            FOR UPDATE SKIP LOCKED;
+                        """
             cursor.execute(select_query)
             links = cursor.fetchall()
 
@@ -201,8 +228,8 @@ class Scraper(BaseModel):
                     self.extract_rating_items(soup, data_dictionary)
                     total_record_list.append((link, data_dictionary['Name'], data_dictionary['Brand'],
                                               data_dictionary['Year'], data_dictionary['Decade'],
-                                              data_dictionary['Description'], data_dictionary['Image'],
-                                              data_dictionary['Notes'],
+                                              data_dictionary['Description'], data_dictionary['Generated_descriptions'],
+                                              data_dictionary['Image'], data_dictionary['Notes'],
                                               data_dictionary['Type'], data_dictionary['Type Numbers'],
                                               data_dictionary['Style'], data_dictionary['Style Numbers'],
                                               data_dictionary['Season'], data_dictionary['Season Numbers'],
@@ -211,14 +238,39 @@ class Scraper(BaseModel):
                                               data_dictionary['Bottle'], data_dictionary['Value For Money'],))
                     successful_link_scrape_ids.append((record_id,))
                 except Exception as e:
-                    print(f"Encountered an error while scraping individual link: {e}")
+                    #print(f"Encountered an error while scraping individual link: {e}")
+                    print("Encountered an error while scraping individual link:")
+                    print(f"Link: {link}")
+                    print(f"Error Type: {type(e).__name__}")
+                    print(f"Error Message: {str(e)}")
+                    print("Full Traceback:")
+                    print(traceback.format_exc())
 
             # After loop, insert newly acquired data into the etl_perfume table (contains all info)
             insert_query = """
-                            INSERT INTO etl_perfume (link, name, brand, rel_year, rel_decade, description, image, notes, 
-                            type, type_numbers, style, style_numbers, season, season_numbers, occasion, occasion_numbers,  
-                            scent, longevity, sillage, bottle, value_for_money)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                            INSERT INTO etl_perfume (
+                                link, name, brand, rel_year, rel_decade, description, generated_descriptions, image, notes,
+                                type, type_numbers, style, style_numbers, season, season_numbers, occasion, occasion_numbers,
+                                scent, longevity, sillage, bottle, value_for_money
+                            )
+                            VALUES (
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                                %s, %s, %s, %s, %s, %s, %s, %s,
+                                %s, %s, %s, %s, %s
+                            )
+                            ON CONFLICT (link) DO UPDATE
+                            SET (
+                                link, name, brand, rel_year, rel_decade, description, generated_descriptions, image, notes,
+                                type, type_numbers, style, style_numbers, season, season_numbers, occasion, occasion_numbers,
+                                scent, longevity, sillage, bottle, value_for_money
+                            ) = (
+                                EXCLUDED.link, EXCLUDED.name, EXCLUDED.brand, EXCLUDED.rel_year, EXCLUDED.rel_decade,
+                                EXCLUDED.description, EXCLUDED.generated_descriptions, EXCLUDED.image, EXCLUDED.notes,
+                                EXCLUDED.type, EXCLUDED.type_numbers, EXCLUDED.style, EXCLUDED.style_numbers,
+                                EXCLUDED.season, EXCLUDED.season_numbers, EXCLUDED.occasion, EXCLUDED.occasion_numbers,
+                                EXCLUDED.scent, EXCLUDED.longevity, EXCLUDED.sillage, EXCLUDED.bottle, EXCLUDED.value_for_money
+                            );
+
                             """
 
             cursor.executemany(insert_query, total_record_list)
