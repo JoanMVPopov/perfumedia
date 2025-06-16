@@ -88,8 +88,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2"   # Limit to 2 CPU threads
-          memory: "1.5GB"  # Limit RAM to 2GB
+          cpus: "2"
+          memory: "2GB"
+        reservations:
+          cpus: "1"
+          memory: "1GB"
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://localhost:8000/health" ]
       interval: 30s
@@ -114,18 +117,18 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-#      dockerfile: production.Dockerfile
-#      args:
-#        VUE_APP_API_URL: ${VUE_APP_API_URL}
+#      dockerfile: Dockerfile
+      dockerfile: production.Dockerfile
+      args:
+        VUE_APP_API_URL: ${VUE_APP_API_URL}
     deploy:
       resources:
         limits:
-          cpus: "1"   # Limit to 2 CPU threads
-          memory: "1GB"  # Limit RAM to 2GB
+          cpus: "2"
+          memory: "2GB"
         reservations:
-          cpus: "0.5"   # Reserve at least 1 CPU thread
-          memory: "0.5GB"  # Reserve at least 1GB RAM
+          cpus: "1"
+          memory: "1GB"
     restart: always
     env_file:
       - .env
