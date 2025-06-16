@@ -95,6 +95,7 @@ services:
       dockerfile: production.Dockerfile
       args:
         VUE_APP_API_URL: ${VUE_APP_API_URL}
+      target: production-stage
     deploy:
       resources:
         limits:
