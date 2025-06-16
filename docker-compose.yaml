@@ -34,6 +34,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/airflow/plugins:/opt/airflow/plugins
+    - media:/opt/airflow/dags/temp
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -100,6 +101,7 @@ services:
       - .env
     volumes:
       - ./backend:/app/backend
+      - media:/app/backend/media
     ports:
       - "8000:8000"
     depends_on:
@@ -304,6 +306,7 @@ services:
           --role Admin \
           --email "$${AIRFLOW_ADMIN_EMAIL}" \
           --password "$${AIRFLOW_ADMIN_PASSWORD}"
+        chown -R 50000:0 /opt/airflow/dags/temp
         echo "Init finished, no problems detected"
     # yamllint enable rule:line-length
     environment:
@@ -347,3 +350,4 @@ networks:
 
 volumes:
   postgres_data:
+  media:
