@@ -270,54 +270,93 @@ services:
       - |
         set -e
         echo "INFO: Running init as root (UID: $$(id -u))"
-
-        TARGET_UID="${AIRFLOW_UID:-50000}"
-        TARGET_GID="0"
         
-        echo "INFO: Airflow UID $${AIRFLOW_UID}"
-        echo "INFO: Target UID $${TARGET_UID}"
-
+        # Determine target UID. Default to 50000 if AIRFLOW_UID is unset OR empty.
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set or is empty! Defaulting to UID 50000.\e[0m"
+          TARGET_UID_NUMERIC="50000"
+        else
+          TARGET_UID_NUMERIC="${AIRFLOW_UID}"
+        fi
+        TARGET_GID_NUMERIC="0" # Or the GID of the airflow user, typically also 0 (root group) or 50000
+        
+        # Get the username associated with TARGET_UID_NUMERIC
+        # The 'airflow' user in the official image has UID 50000.
+        TARGET_USERNAME="airflow" 
+        # You could also try to derive it if AIRFLOW_UID could be something other than 50000
+        # TARGET_USERNAME=$(getent passwd "${TARGET_UID_NUMERIC}" | cut -d: -f1)
+        # if [[ -z "${TARGET_USERNAME}" ]]; then
+        #   echo "ERROR: Could not find username for UID ${TARGET_UID_NUMERIC}. Exiting."
+        #   exit 1
+        # fi
+        
+        echo "INFO: Effective AIRFLOW_UID for ownership/execution: '${TARGET_UID_NUMERIC}' (Username: '${TARGET_USERNAME}')"
+        
         echo "INFO: Creating /opt/airflow/dags/temp with correct ownership"
         mkdir -p /opt/airflow/dags/temp
-        chown -R "$${TARGET_UID}:$${TARGET_GID}" /opt/airflow/dags/temp
-
-        echo "INFO: Switching to UID $${TARGET_UID} and running Airflow setup"
-
-        su -s /bin/bash -c "
+        chown -R "${TARGET_UID_NUMERIC}:${TARGET_GID_NUMERIC}" /opt/airflow/dags/temp
+        
+        echo "INFO: Switching to user '${TARGET_USERNAME}' (UID ${TARGET_UID_NUMERIC}) and running Airflow setup"
+        
+        # Note: $${VAR} is for YAML/outer shell. Inside the su -c "...", use \${VAR} for inner shell.
+        # Command substitutions $(...) inside the su -c "..." also need escaping: \$(\$(...))
+        exec su -s /bin/bash -c '
           set -e
-          echo 'INFO: Now running as UID: $$(id -u), GID: $$(id -g)'
-
+          echo "INFO: Now running as UID: $(id -u), GID: $(id -g), User: $(whoami)"
+        
           one_meg=1048576
-          mem_available=\$((\$(getconf _PHYS_PAGES) * \$(getconf PAGE_SIZE) / one_meg))
-          cpus_available=\$(grep -cE 'cpu[0-9]+' /proc/stat)
-          disk_available=\$(df / | tail -1 | awk '{print \$4}')
-
+          # Ensure arithmetic expansions are safe
+          phys_pages=$(getconf _PHYS_PAGES)
+          page_size=$(getconf PAGE_SIZE)
+        
+          # Check if values are numeric before arithmetic
+          if ! [[ "$phys_pages" =~ ^[0-9]+$ ]] || ! [[ "$page_size" =~ ^[0-9]+$ ]]; then
+            echo "ERROR: Could not get valid numeric values for physical pages or page size."
+            mem_available=0 # Default to 0 or handle error
+          else
+            mem_available=$((phys_pages * page_size / one_meg))
+          fi
+        
+          cpus_available=$(grep -cE "cpu[0-9]+" /proc/stat || echo 0) # Default to 0 on error
+          disk_avail_kb=$(df / | tail -1 | awk "{print \$4}" || echo 0) # Default to 0 on error
+        
+          # Check if disk_avail_kb is numeric
+          if ! [[ "$disk_avail_kb" =~ ^[0-9]+$ ]]; then
+              disk_available=0
+          else
+              disk_available=$disk_avail_kb
+          fi
+        
           warning_resources="false"
+          # Use -lt for numeric comparison in (( )) or [[ ]]
           if (( mem_available < 4000 )); then warning_resources=true; fi
           if (( cpus_available < 2 )); then warning_resources=true; fi
-          if (( disk_available < one_meg*10 )); then warning_resources=true; fi
-
+          if (( disk_available < one_meg * 10 )); then warning_resources=true; fi # disk_available is in KB
+        
           if [[ "${warning_resources}" == "true" ]]; then
-            echo -e '\033[1;33mWARNING: Insufficient resources! Mem: \$mem_available MB, CPUs: \$cpus_available, Disk: \$disk_available KB\033[0m'
+            echo -e "\033[1;33mWARNING: Insufficient resources! Mem: ${mem_available}MB, CPUs: ${cpus_available}, Disk: ${disk_available}KB\033[0m"
           else
-            echo 'INFO: Resource check passed.'
+            echo "INFO: Resource check passed. Mem: ${mem_available}MB, CPUs: ${cpus_available}, Disk: ${disk_available}KB"
           fi
-
-          echo 'INFO: Running airflow db migrate...'
+        
+          echo "INFO: Running airflow db migrate..."
           airflow db migrate
-
-          echo 'INFO: Creating admin user...'
-          airflow users create \
-            --username \"$${AIRFLOW_ADMIN_USER}\" \
-            --firstname \"$${AIRFLOW_ADMIN_FIRSTNAME}\" \
-            --lastname \"$${AIRFLOW_ADMIN_LASTNAME}\" \
-            --role Admin \
-            --email \"$${AIRFLOW_ADMIN_EMAIL}\" \
-            --password \"$${AIRFLOW_ADMIN_PASSWORD}\" \
-          || echo 'INFO: User may already exist.'
-
-          echo 'INFO: Done.'
-        " airflow
+        
+          echo "INFO: Creating admin user ${AIRFLOW_ADMIN_USER}..."
+          if ! airflow users list | grep -qF "${AIRFLOW_ADMIN_USER}"; then
+            airflow users create \
+              --username "${AIRFLOW_ADMIN_USER}" \
+              --firstname "${AIRFLOW_ADMIN_FIRSTNAME}" \
+              --lastname "${AIRFLOW_ADMIN_LASTNAME}" \
+              --role Admin \
+              --email "${AIRFLOW_ADMIN_EMAIL}" \
+              --password "${AIRFLOW_ADMIN_PASSWORD}"
+          else
+            echo "INFO: Admin user ${AIRFLOW_ADMIN_USER} already exists."
+          fi
+        
+          echo "INFO: Airflow initialization process complete."
+        ' "${TARGET_USERNAME}"
     environment:
       <<: *airflow-common-env
     user: "0:0"
