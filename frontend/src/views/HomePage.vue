@@ -83,26 +83,11 @@
 
 <script>
 import PageCard from '../components/PageCard.vue';
-import apiClient from "@/api";
 
 import flowchart from '@/assets/Flowchart_perfumedia.jpeg'
 
 export default {
   name: 'HomePage',
-  mounted() {
-    this.getLatestProducts();
-  },
-  methods: {
-    getLatestProducts() {
-      apiClient.get('/test/latest-products/')
-          .then(response => {
-            this.latestProducts = response.data;
-          }).catch(error => {
-            //console.log(`ERROR: BASE URL IS: ${apiClient.defaults.baseURL}\n`);
-            //console.log(error);
-      });
-    }
-  },
   components: {
     PageCard,
   },

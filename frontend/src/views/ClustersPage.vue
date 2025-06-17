@@ -514,9 +514,9 @@ export default {
       attemptedFetchOtherDr: false,
 
       filters: {
-        pcaAnalysis: { decade: "All", gender: "All" },
-        pcaAdditionalAnalysis: { decade: "All", gender: "All" },
-        otherDrAnalysis: { decade: "All", gender: "All"},
+        pcaAnalysis: { decade: { label: "All", value: "All" }, gender: { label: "All", value: "All" } },
+        pcaAdditionalAnalysis: { decade: { label: "All", value: "All" }, gender: { label: "All", value: "All" } },
+        otherDrAnalysis: { decade: { label: "All", value: "All" }, gender: { label: "All", value: "All" }},
       },
       images: {
         pcaOverview: [],
