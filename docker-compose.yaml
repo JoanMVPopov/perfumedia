@@ -158,7 +158,7 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    entrypoint: ["xvfb-run", "--auto-servernum", "--server-args=-screen 0 1920x1080x24", "/usr/bin/tini", "--", "/entrypoint.sh"]
+    #entrypoint: ["xvfb-run", "--auto-servernum", "--server-args=-screen 0 1920x1080x24", "/usr/bin/tini", "--", "/entrypoint.sh"]
     command: celery worker
     healthcheck:
       test:
