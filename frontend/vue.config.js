@@ -12,7 +12,8 @@ module.exports = defineConfig({
   configureWebpack: {
             entry: "./src/main.js",
             devServer: {
-                hot: true,
+                hot: false,
+                liveReload: false,
                 allowedHosts: [
                   'perfumedia.info',
                   // If you might use subdomains like app.perfumedia.info in the future,
@@ -20,7 +21,7 @@ module.exports = defineConfig({
                   '.perfumedia.info',
                 ],
             },
-            watch: true,
+            watch: false,
             watchOptions: {
                 ignored: /node_modules/,
                 poll: 1000,
