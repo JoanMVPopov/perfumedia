@@ -264,85 +264,64 @@ services:
   airflow-init:
     <<: *airflow-common
     image: "apache/airflow:2.10.1"
-    entrypoint: /bin/bash # The entrypoint will run this script
+    entrypoint: /bin/bash
     command:
       - -c
       - |
-        set -e # Exit immediately if a command exits with a non-zero status.
-  
-        # This part of the script runs as root (due to user: "0:0" below)
-        echo "INFO: Running initial setup as root (UID: $$(id -u), GID: $$(id -g))"
-  
-        # Ensure AIRFLOW_UID is set, default to 50000 if not.
-        # This is important for chown and gosu.
+        set -e
+        echo "INFO: Running init as root (UID: $$(id -u))"
+        echo "INFO: Target UID $${TARGET_UID}"
+
         TARGET_UID="${AIRFLOW_UID:-50000}"
-        TARGET_GID="0" # As per your original chown
-  
-        if [[ -z "${AIRFLOW_UID}" ]]; then
-          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set! Defaulting to UID ${TARGET_UID} for ownership and execution.\e[0m"
-        fi
-  
-        echo "INFO: Ensuring directory /opt/airflow/dags/temp exists and is owned by ${TARGET_UID}:${TARGET_GID}."
-        mkdir -p /opt/airflow/dags/temp # Create the directory if it doesn't exist
-        chown -R "${TARGET_UID}:${TARGET_GID}" /opt/airflow/dags/temp
-        
-        echo "INFO: Chown complete. Switching to user ${TARGET_UID} for Airflow commands."
-  
-        # Execute the rest of the script as the TARGET_UID user (typically airflow/50000)
-        # gosu needs the UID, and it will try to set the primary group of that user.
-        # The apache/airflow image's 'airflow' user (50000) is already in group 'root' (0).
-        # So, `gosu "${TARGET_UID}"` is sufficient.
-        exec gosu "${TARGET_UID}" bash -c '
-          set -e # Exit immediately if a command exits with a non-zero status.
-          echo "INFO: Switched. Now running as UID: $$(id -u), GID: $$(id -g)"
-  
-          # Resource checks (these were already fine to run as non-root)
+        TARGET_GID="0"
+
+        echo "INFO: Creating /opt/airflow/dags/temp with correct ownership"
+        mkdir -p /opt/airflow/dags/temp
+        chown -R "$${TARGET_UID}:$${TARGET_GID}" /opt/airflow/dags/temp
+
+        echo "INFO: Switching to UID $${TARGET_UID} and running Airflow setup"
+
+        su -s /bin/bash -c "
+          set -e
+          echo 'INFO: Now running as UID: $$(id -u), GID: $$(id -g)'
+
           one_meg=1048576
-          # Note: $$(...) becomes $(...) inside the single-quoted bash -c script string
-          # because the outer shell (processing the YAML) resolves $$,
-          # and the inner shell (run by gosu) sees and executes $(...)
-          mem_available=$$(($$(getconf _PHYS_PAGES) * $$(getconf PAGE_SIZE) / one_meg))
-          # For grep and awk, we need to handle quotes carefully inside bash -c '\''...'\''
-          cpus_available=$$(grep -cE '\''cpu[0-9]+'\'' /proc/stat)
-          disk_available=$$(df / | tail -1 | awk '\''{print $$4}'\'') # $$4 becomes $4 for awk
-  
-          warning_resources="false"
-          if (( mem_available < 4000 )) ; then warning_resources="true"; fi
-          if (( cpus_available < 2 ));     then warning_resources="true"; fi
-          # Ensure disk_available is treated as a number
-          if (( disk_available < one_meg*10 )); then warning_resources="true"; fi
-  
-          if [[ "${warning_resources}" == "true" ]]; then # Added quotes for robustness
-            echo -e "\033[1;33mWARNING: Insufficient resources! Mem: ${mem_available}MB, CPUs: ${cpus_available}, Disk: ${disk_available}KB\033[0m"
+          mem_available=\$((\$(getconf _PHYS_PAGES) * \$(getconf PAGE_SIZE) / one_meg))
+          cpus_available=\$(grep -cE 'cpu[0-9]+' /proc/stat)
+          disk_available=\$(df / | tail -1 | awk '{print \$4}')
+
+          warning_resources=false
+          if (( mem_available < 4000 )); then warning_resources=true; fi
+          if (( cpus_available < 2 )); then warning_resources=true; fi
+          if (( disk_available < one_meg*10 )); then warning_resources=true; fi
+
+          if [[ \$warning_resources == true ]]; then
+            echo -e '\033[1;33mWARNING: Insufficient resources! Mem: \$mem_available MB, CPUs: \$cpus_available, Disk: \$disk_available KB\033[0m'
           else
-            echo "INFO: Resource check passed. Mem: ${mem_available}MB, CPUs: ${cpus_available}, Disk: ${disk_available}KB"
+            echo 'INFO: Resource check passed.'
           fi
-  
-          echo "INFO: Running Airflow DB migration..."
+
+          echo 'INFO: Running airflow db migrate...'
           airflow db migrate
-  
-          echo "INFO: Creating Airflow admin user ${AIRFLOW_ADMIN_USER}..."
-          # The create command might fail if the user already exists.
-          # Adding `|| true` or a more specific check can make it idempotent.
-          # For simplicity, keeping original behavior:
+
+          echo 'INFO: Creating admin user...'
           airflow users create \
-            --username "${AIRFLOW_ADMIN_USER}" \
-            --firstname "${AIRFLOW_ADMIN_FIRSTNAME}" \
-            --lastname "${AIRFLOW_ADMIN_LASTNAME}" \
+            --username \"$${AIRFLOW_ADMIN_USER}\" \
+            --firstname \"$${AIRFLOW_ADMIN_FIRSTNAME}\" \
+            --lastname \"$${AIRFLOW_ADMIN_LASTNAME}\" \
             --role Admin \
-            --email "${AIRFLOW_ADMIN_EMAIL}" \
-            --password "${AIRFLOW_ADMIN_PASSWORD}" \
-          || echo "INFO: airflow users create finished. It might have failed if user already exists (which is often OK)."
-  
-          echo "INFO: Airflow initialization process complete."
-        '
+            --email \"$${AIRFLOW_ADMIN_EMAIL}\" \
+            --password \"$${AIRFLOW_ADMIN_PASSWORD}\" \
+          || echo 'INFO: User may already exist.'
+
+          echo 'INFO: Done.'
+        " airflow
     environment:
       <<: *airflow-common-env
-      # AIRFLOW_UID is expected to be in airflow-common-env or globally defined
-      # The script now uses TARGET_UID internally based on AIRFLOW_UID or its default.
-    user: "0:0" # Run the entrypoint script as root:root
+    user: "0:0"
     networks:
       - app-network
+
 
 networks:
   app-network:
