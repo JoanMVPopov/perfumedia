@@ -13,6 +13,12 @@ module.exports = defineConfig({
             entry: "./src/main.js",
             devServer: {
                 hot: true,
+                allowedHosts: [
+                  'perfumedia.info',
+                  // If you might use subdomains like app.perfumedia.info in the future,
+                  // you can also add a wildcard for subdomains:
+                  '.perfumedia.info',
+                ],
             },
             watch: true,
             watchOptions: {
