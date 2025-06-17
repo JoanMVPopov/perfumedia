@@ -15,27 +15,26 @@ RUN apt-get update && apt-get install -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Create an entrypoint script that starts Xvfb and then execs the given CMD
-RUN cat << 'EOF' > /entrypoint.sh
-#!/usr/bin/env bash
-# Start X virtual framebuffer on display :99, 1920×1080×24
-Xvfb :99 -screen 0 1920x1080x24 &
-export DISPLAY=:99
+USER root
 
-# Hand off to whatever command was provided
-exec "$@"
-EOF
+# Create the entrypoint script that launches Xvfb and then runs the main command
+RUN echo '#!/usr/bin/env bash' > /entrypoint_xvfb.sh && \
+    echo '# Start X virtual framebuffer in the background' >> /entrypoint_xvfb.sh && \
+    echo 'Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset & ' >> /entrypoint_xvfb.sh && \
+    echo 'export DISPLAY=:99' >> /entrypoint_xvfb.sh && \
+    echo '' >> /entrypoint_xvfb.sh && \
+    echo '# Wait a moment for Xvfb to start (optional, but can help prevent race conditions)' >> /entrypoint_xvfb.sh && \
+    echo 'sleep 2' >> /entrypoint_xvfb.sh && \
+    echo '' >> /entrypoint_xvfb.sh && \
+    echo '# Execute the command passed into the container (e.g., airflow scheduler, worker, webserver)' >> /entrypoint_xvfb.sh && \
+    echo 'exec "$@"' >> /entrypoint_xvfb.sh
 
-RUN chmod +x /entrypoint.sh
+# Make the new entrypoint script executable
+RUN chmod +x /entrypoint_xvfb.sh
 
-# Switch back to airflow user for normal operation
-USER airflow
+# Switch back to the airflow user
+USER airflow 
 
-# Copy your Python dependencies and install them
-COPY ./requirements.txt .
-
-RUN pip install --upgrade pip \
-  && pip install -r requirements.txt
-
-# Use our wrapper entrypoint, letting docker-compose still supply the CMD
-ENTRYPOINT ["/entrypoint.sh"]
+# Set the new entrypoint
+# This will be used by all services using this image, unless overridden in docker-compose.yml
+ENTRYPOINT ["/entrypoint_xvfb.sh"]
