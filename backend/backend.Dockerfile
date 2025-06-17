@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 ENV PORT 8000
 
 ## Set the working directory to /app
-WORKDIR /app
+WORKDIR /app/backend
 
 # install dependencies
 RUN pip install --upgrade pip
@@ -19,14 +19,14 @@ COPY ./requirements.txt .
 RUN pip install -r requirements.txt -vvv
 
 
-## USE FOR PRODUCTION WHEN READY, OTHERWISE VOLUMES ARE UTILIZED
-### Copy the entire backend directory into /app/backend
-#COPY . ./backend
+# USE FOR PRODUCTION WHEN READY, OTHERWISE VOLUMES ARE UTILIZED
+## Copy the entire backend directory into /app/backend
+COPY . .
 
 ENV PYTHONPATH "${PYTHONPATH}:/app/backend"
 
 # Inform Docker that the container listens on the specified network port at runtime
 EXPOSE ${PORT}
 
-CMD python backend/manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:"${PORT}" --timeout 120
+CMD python manage.py migrate && gunicorn wsgi:application --bind 0.0.0.0:"${PORT}" --timeout 120
 

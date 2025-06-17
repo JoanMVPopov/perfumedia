@@ -18,27 +18,17 @@ RUN npm install && npm update
 
 #----------
 
-## USING VOLUMES RIGHT NOW, CHANGE TO THIS LATER FOR PRODUCTION
-## copy project files and folders to the current working directory (i.e. 'app' folder)
-#COPY . ./frontend
+# USING VOLUMES RIGHT NOW, CHANGE TO THIS LATER FOR PRODUCTION
+# copy project files and folders to the current working directory (i.e. 'app' folder)
+COPY . .
 
-## build app for production with minification
-#RUN npm run build
-#
-#EXPOSE 8080
-#CMD [ "http-server", "dist" ]
+# build app for production with minification
+RUN npm run build
+
+EXPOSE 8080
+CMD [ "http-server", "dist" ]
 
 #-----------
 
-# build app for production with minification
-
-## THIS WORKS, USING PRODUCTION APPROACH WHILE UTILIZING VOLUMES
-## BUT BUILDING WHILE RUNNING A CONTAINER IS NOT A GOOD IDEA, SLOW
-## BETTER TO DO IT WHEN BUILDING IMAGE (with RUN npm run build above)
-
 #EXPOSE 8080
-#CMD cd ./frontend && npm run build && http-server dist
-
-EXPOSE 8080
-#CMD cd ./frontend && npm run serve
-CMD npm run serve
+#CMD npm run serve

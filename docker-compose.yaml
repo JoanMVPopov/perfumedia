@@ -70,7 +70,7 @@ services:
           cpus: "1"
           memory: "1GB"
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:8000/health" ]
+      test: [ "CMD", "curl", "--fail", "http://localhost:8082/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -79,7 +79,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend:/app/backend
+#      - ./backend:/app/backend
       - media:/app/backend/media
     ports:
       - "8082:8000"
@@ -108,8 +108,8 @@ services:
     restart: always
     env_file:
       - .env
-    volumes:
-      - ./frontend:/app/frontend
+#    volumes:
+#      - ./frontend:/app/frontend
     ports:
       - "3000:8080"
 #      - "3000:80"
