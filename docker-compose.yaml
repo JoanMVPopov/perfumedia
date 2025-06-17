@@ -271,17 +271,17 @@ services:
         set -e
         echo "INFO: Running init as root (UID: $(id -u))"
 
-        TARGET_UID="${AIRFLOW_UID}"
+        TARGET_UID="50000"
         export TARGET_UID
         TARGET_GID="0"
 
         echo "INFO: Airflow UID ${AIRFLOW_UID}"
         echo "INFO: Target UID ${TARGET_UID}"
 
-        echo "INFO: Creating /opt/airflow/dags/temp with correct ownership"
+        echo "INFO: Chown /opt/airflow/dags/temp"
         chown -R "${TARGET_UID}:${TARGET_GID}" /opt/airflow/dags/temp
 
-        echo "INFO: Creating /opt/airflow/logs and subdirs"
+        echo "INFO: Chown /opt/airflow/logs"
         chown -R "${TARGET_UID}:${TARGET_GID}" /opt/airflow/logs
 
         echo "INFO: Switching to UID ${TARGET_UID} and running Airflow setup"
