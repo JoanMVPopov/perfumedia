@@ -20,6 +20,9 @@ module.exports = defineConfig({
                   // you can also add a wildcard for subdomains:
                   '.perfumedia.info',
                 ],
+                client: {
+                  webSocketURL: 'wss://perfumedia.info/ws',
+                },
             },
             watch: false,
             watchOptions: {
