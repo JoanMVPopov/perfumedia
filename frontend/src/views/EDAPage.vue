@@ -1371,7 +1371,7 @@ export default {
         this.images.ratings[0] = responses[0]?.data?.images || [];
         this.images.ratings[1] = responses[1]?.data?.images || [];
       } catch (err) {
-        console.error("Error fetching Ratings data:", err);
+        ////console.error("Error fetching Ratings data:", err);
         this.error1 = "Error fetching Ratings data. Try refreshing or check console.";
         this.images.ratings = [[],[]]; // Clear on error
       } finally {
@@ -1393,7 +1393,7 @@ export default {
         this.images.ratingsProgression[0] = responses[0]?.data?.images || [];
         this.images.ratingsProgression[1] = responses[1]?.data?.images || [];
       } catch (err) {
-        console.error("Error fetching Ratings Progression data:", err);
+        //console.error("Error fetching Ratings Progression data:", err);
         this.error2 = "Error fetching Ratings progression. Try refreshing or check console.";
         this.images.ratingsProgression = [[],[]];
       } finally {
@@ -1415,7 +1415,7 @@ export default {
         this.images.categoriesAndNotes[0] = responses[0]?.data?.images || [];
         this.images.categoriesAndNotes[1] = responses[1]?.data?.images || [];
       } catch (err) {
-        console.error("Error fetching Categories/Notes data:", err);
+        //console.error("Error fetching Categories/Notes data:", err);
         this.error3 = "Error fetching Categories & Notes. Try refreshing or check console.";
         this.images.categoriesAndNotes = [[],[]];
       } finally {
@@ -1437,7 +1437,7 @@ export default {
         this.images.correlation[0] = responses[0]?.data?.images || [];
         this.images.correlation[1] = responses[1]?.data?.images || [];
       } catch (err) {
-        console.error("Error fetching Correlation data:", err);
+        //console.error("Error fetching Correlation data:", err);
         this.error4 = "Error fetching Correlation data. Try refreshing or check console.";
         this.images.correlation = [[],[]];
       } finally {
@@ -1459,7 +1459,7 @@ export default {
         this.images.brands[0] = responses[0]?.data?.images || [];
         this.images.brands[1] = responses[1]?.data?.images || [];
       } catch (err) {
-        console.error("Error fetching Brands data:", err);
+        //console.error("Error fetching Brands data:", err);
         this.error5 = "Error fetching Brands data. Try refreshing or check console.";
         this.images.brands = [[],[]];
       } finally {

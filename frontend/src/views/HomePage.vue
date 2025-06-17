@@ -98,8 +98,8 @@ export default {
           .then(response => {
             this.latestProducts = response.data;
           }).catch(error => {
-            console.log(`ERROR: BASE URL IS: ${apiClient.defaults.baseURL}\n`);
-            console.log(error);
+            //console.log(`ERROR: BASE URL IS: ${apiClient.defaults.baseURL}\n`);
+            //console.log(error);
       });
     }
   },

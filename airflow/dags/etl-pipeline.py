@@ -209,8 +209,40 @@ with DAG(
             return
 
 
+    from airflow.providers.postgres.hooks.postgres import PostgresHook
+
+
     def placeholder_before_stats():
         print("Stats calculation will begin shortly...")
+        print("Wiping cluster information...")
+
+        connection = None
+        cursor = None
+
+        try:
+            pg_hook = PostgresHook(postgres_conn_id='dag_connection')
+            connection = pg_hook.get_conn()
+            cursor = connection.cursor()
+
+            cursor.execute("TRUNCATE TABLE etl_clusters")
+
+            connection.commit()
+
+            # verify it's empty
+            cursor.execute("SELECT COUNT(*) FROM etl_clusters")
+            count = cursor.fetchone()[0]
+
+            assert count == 0, "Cluster info was not wiped correctly"
+
+            print("Wiping completed. Analysis will begin soon...")
+        except Exception as e:
+            print("Error during stats prep:", e)
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
 
     extract_task = PythonOperator(
         task_id='extract_data',

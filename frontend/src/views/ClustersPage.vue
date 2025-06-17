@@ -739,10 +739,13 @@ export default {
       this.images.pcaOverview = [];
       this.expandedIndicesPcaOverview = [];
       this.displayedTextPcaOverview = [];
+
       try {
-        const response = await apiClient.get("/test/clustering-pca-analysis", {
-          params: this.filters.pcaAnalysis,
-        });
+        const params = {
+          gender: this.filters.pcaAnalysis.gender.value,
+          decade: this.filters.pcaAnalysis.decade.value
+        }
+        const response = await apiClient.get("/test/clustering-pca-analysis", {params});
         this.images.pcaOverview = response.data.images || [];
         if (this.images.pcaOverview.length > 0) {
           this.displayedTextPcaOverview = Array(this.images.pcaOverview.length).fill("");
@@ -771,8 +774,8 @@ export default {
       this.textCuratedItemExplanationState = {};
       try {
         const params = {
-          decade: this.filters.pcaAdditionalAnalysis.decade,
-          gender: this.filters.pcaAdditionalAnalysis.gender,
+          decade: this.filters.pcaAdditionalAnalysis.decade.value,
+          gender: this.filters.pcaAdditionalAnalysis.gender.value,
           clustering_method: this.selectedCuratedClusteringMethod.value,
           dr_method: this.selectedCuratedDrMethod.value
         };
@@ -811,8 +814,8 @@ export default {
 
     try {
       const params = {
-        decade: this.filters.otherDrAnalysis.decade,
-        gender: this.filters.otherDrAnalysis.gender,
+        decade: this.filters.otherDrAnalysis.decade.value,
+        gender: this.filters.otherDrAnalysis.gender.value,
         clustering_method: this.selectedAllClusteringMethod.value,
         dr_method: this.selectedAllDrMethod.value
       };

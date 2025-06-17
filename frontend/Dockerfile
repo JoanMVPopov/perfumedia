@@ -10,6 +10,8 @@ WORKDIR /app/frontend
 # copy both 'package.json' and 'package-lock.json' (if available)
 COPY package*.json ./
 
+COPY vue.config.js ./
+
 # install simple http server for serving static content
 RUN npm install -g http-server --verbose
 
