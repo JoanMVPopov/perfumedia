@@ -23,12 +23,12 @@ RUN npm install && npm update
 COPY . .
 
 # build app for production with minification
-RUN npm run build
-
-EXPOSE 8080
-CMD [ "http-server", "dist" ]
+#RUN npm run build
+#
+#EXPOSE 8080
+#CMD [ "http-server", "dist" ]
 
 #-----------
 
-#EXPOSE 8080
-#CMD npm run serve
+EXPOSE 8080
+CMD npm run serve
