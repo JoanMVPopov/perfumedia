@@ -271,7 +271,7 @@ services:
         set -e
         echo "INFO: Running init as root (UID: $(id -u))"
 
-        TARGET_UID="${AIRFLOW_UID:-50000}"
+        TARGET_UID="${AIRFLOW_UID}"
         export TARGET_UID
         TARGET_GID="0"
 
