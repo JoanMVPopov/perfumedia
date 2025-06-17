@@ -415,12 +415,12 @@ export default {
       defaultSimilaritiesResult: null,
       // Array to store Chart.js instances (one for each pie chart)
       chartInstances: [null, null, null, null],
-      weight_categories: 0.5,
+      weight_categories: 1.0,
     };
   },
   computed: {
     weight_notes() {
-      return 1 - this.weight_categories; // Reactively updates when weight1 changes
+      return 1.0 - this.weight_categories; // Reactively updates when weight1 changes
     },
     // Filter out already selected notes from the dropdown options
     availableNotes() {
@@ -533,6 +533,11 @@ export default {
     calculateSimilaritiesDefault(){
       this.defaultSimilaritiesResult = null;
       this.loadingDefaultSimilarities = true;
+
+      if (!this.hasSelectedNotes()){
+        this.weight_categories = 1.0;
+      }
+
       apiClient
         .post("/test/pf-similarities-default/", {
           w_notes: this.weight_notes,
